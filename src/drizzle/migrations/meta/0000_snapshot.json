@@ -1,5 +1,5 @@
 {
-  "id": "1dfa8e05-25f0-495e-b1f9-3b80e52bf5b7",
+  "id": "fb1c16e0-58ed-4d0d-b60e-7065d91ae6da",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -37,7 +37,8 @@
           "name": "deactivatedOn",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "now()"
         },
         "usageDays": {
           "name": "usageDays",

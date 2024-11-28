@@ -1,7 +1,7 @@
 export const responseObject = (
   statusCode: number,
   message: string,
-  optional: {
+  optional?: {
     data?: any;
     error?: any;
     privateKey?: string;

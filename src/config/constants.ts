@@ -12,6 +12,15 @@ export default {
     notFound: 404,
     serverError: 500,
   },
+  debugErrorCodes: {
+    userComponent: {
+      saveUser: "EU000",
+      getUser: "EU001",
+      saveLogin: "EU002",
+      updateLogout: "EU003",
+      deactivate: "EU004",
+    },
+  },
   user: {
     registered: "User registered successfully",
     notRegistered: "User not registered",

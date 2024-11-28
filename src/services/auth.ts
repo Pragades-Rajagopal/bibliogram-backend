@@ -21,7 +21,7 @@ export const authenticateToken = (
   req: Request | any,
   res: Response,
   next: NextFunction
-) => {
+): any => {
   const authHeader = req.headers["authorization"];
   const userId = req.headers["userid"];
   const token = authHeader && authHeader.split(" ")[1];

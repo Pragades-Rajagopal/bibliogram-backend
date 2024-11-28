@@ -5,9 +5,11 @@ import * as auth from "../services/auth";
 import { GeneratePrivateKey } from "../interfaces/user";
 import { responseObject } from "../utils/response";
 import {
+  deactivateUserModel,
   getUserInfoModel,
   saveUserLogin,
   saveUserModel,
+  updateUserLogout,
 } from "../services/user";
 
 /**
@@ -100,16 +102,91 @@ export const userLogin = async (
       username: userInfo[0].username,
     });
     await saveUserLogin(userInfo[0].id, token);
+    return response.status(constants.statusCode.success).json(
+      responseObject(constants.statusCode.success, "success", {
+        token: token,
+      })
+    );
+  } catch (error: any) {
+    return response.status(constants.statusCode.serverError).json(
+      responseObject(constants.statusCode.serverError, "", {
+        error: error.message,
+      })
+    );
+  }
+};
+
+/**
+ * User logout component
+ * @param {Request} request
+ * @param {Response} response
+ * @returns {Promise}
+ */
+export const userLogout = async (
+  request: Request,
+  response: Response
+): Promise<any> => {
+  try {
+    const userId = request.body.userId;
+    const result: { userId: string }[] = await updateUserLogout(userId);
+    if (!result[0]?.userId) {
+      return response
+        .status(constants.statusCode.error)
+        .json(
+          responseObject(
+            constants.statusCode.error,
+            constants.user.loginNotFound
+          )
+        );
+    }
+    return response
+      .status(constants.statusCode.success)
+      .json(
+        responseObject(
+          constants.statusCode.success,
+          constants.user.logoutSuccess
+        )
+      );
+  } catch (error: any) {
+    return response.status(constants.statusCode.serverError).json(
+      responseObject(constants.statusCode.serverError, "", {
+        error: error.message,
+      })
+    );
+  }
+};
+
+/**
+ * Deactivate user component
+ * @param {Request} request
+ * @param {Response} response
+ * @returns {Promise<any>}
+ */
+export const deactivateUser = async (
+  request: Request | any,
+  response: Response
+): Promise<any> => {
+  try {
+    const { userId } = request.body;
+    // asset validation
+    const _isUserExists: [] = await getUserInfoModel("", userId);
+    if (_isUserExists.length === 0) {
+      return response.status(constants.statusCode.error).json({
+        statusCode: constants.statusCode.error,
+        message: constants.assetValidation.userNotExists,
+      });
+    }
+    await deactivateUserModel(userId);
     return response.status(constants.statusCode.success).json({
       statusCode: constants.statusCode.success,
-      message: "success",
-      token: token,
+      message: constants.user.deactivationSuccess,
     });
   } catch (error: any) {
+    console.error(constants.user.deactivationError);
+    console.error(error);
     return response.status(constants.statusCode.serverError).json({
       statusCode: constants.statusCode.serverError,
-      message: null,
-      error: error.message,
+      message: constants.user.deactivationError,
     });
   }
 };

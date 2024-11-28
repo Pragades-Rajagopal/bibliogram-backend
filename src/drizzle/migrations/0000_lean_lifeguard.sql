@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS "deactivated_user" (
 	"userId" uuid,
 	"fullName" varchar(100),
 	"username" varchar(16),
-	"deactivatedOn" timestamp,
+	"deactivatedOn" timestamp DEFAULT now() NOT NULL,
 	"usageDays" integer
 );
 --> statement-breakpoint

@@ -44,7 +44,7 @@ export const DeactivatedUser = pgTable("deactivated_user", {
   userId: uuid("userId"),
   fullname: varchar("fullName", { length: 100 }),
   username: varchar("username", { length: 16 }),
-  deactivatedOn: timestamp("deactivatedOn"),
+  deactivatedOn: timestamp("deactivatedOn").notNull().defaultNow(),
   usageDays: integer("usageDays"),
 });
 

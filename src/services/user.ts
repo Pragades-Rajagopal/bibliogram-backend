@@ -1,8 +1,9 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import constants from "../config/constants";
 import { db } from "../drizzle/db";
-import { User, UserLogin } from "../drizzle/schema";
+import { DeactivatedUser, User, UserLogin } from "../drizzle/schema";
 import { SaveUserRequest } from "../interfaces/user";
+import { timestamp } from "drizzle-orm/pg-core";
 
 /**
  * Saves user upon registration
@@ -21,17 +22,26 @@ export const saveUserModel = async (data: SaveUserRequest): Promise<any> => {
     if (error?.code == constants.databaseErrors.uniqueConstraintCode) {
       throw new Error(constants.databaseErrors.constraint);
     }
-    throw new Error(constants.commonServerError.internal);
+    throw new Error(
+      `${constants.commonServerError.internal} - ${constants.debugErrorCodes.userComponent.saveUser}`
+    );
   }
 };
 
 /**
  * Gets necessary user info for token payload
  * @param {string} username
+ * @param {string} userId
  * @returns {Promise}
  */
-export const getUserInfoModel = async (username: string): Promise<any> => {
+export const getUserInfoModel = async (
+  username: string,
+  userId?: string
+): Promise<any> => {
   try {
+    const condition = userId
+      ? eq(User.id, userId)
+      : eq(User.username, username);
     return await db
       .select({
         id: User.id,
@@ -40,9 +50,11 @@ export const getUserInfoModel = async (username: string): Promise<any> => {
         privateKey: User.privateKey,
       })
       .from(User)
-      .where(and(eq(User.username, username), eq(User.status, "active")));
+      .where(and(condition, eq(User.status, "active")));
   } catch (error: any) {
-    throw new Error(error);
+    throw new Error(
+      `${constants.commonServerError.internal} - ${constants.debugErrorCodes.userComponent.getUser}`
+    );
   }
 };
 
@@ -65,6 +77,64 @@ export const saveUserLogin = async (
       token: token,
     });
   } catch (error: any) {
-    throw new Error(error);
+    throw new Error(
+      `${constants.commonServerError.internal} - ${constants.debugErrorCodes.userComponent.saveLogin}`
+    );
+  }
+};
+
+/**
+ * Updates logout time for logged out user
+ * @param {string} userId
+ * @returns {Promise}
+ */
+export const updateUserLogout = async (userId: string): Promise<any> => {
+  try {
+    return await db
+      .update(UserLogin)
+      .set({
+        loggedOut: sql`now()`,
+      })
+      .where(eq(UserLogin.userId, userId))
+      .returning({
+        userId: UserLogin.userId,
+      });
+  } catch (error: any) {
+    throw new Error(
+      `${constants.commonServerError.internal} - ${constants.debugErrorCodes.userComponent.updateLogout}`
+    );
+  }
+};
+
+/**
+ * Save user info to deactivated user model upon deactivation and deletes
+ * all user information
+ * @param {string} userId
+ * @returns {Promise}
+ */
+export const deactivateUserModel = async (userId: string): Promise<any> => {
+  try {
+    const userInfo = await db
+      .select({
+        id: User.id,
+        username: User.username,
+        fullname: User.fullname,
+        createdOn: User.createdOn,
+      })
+      .from(User)
+      .where(and(eq(User.id, userId), eq(User.status, "active")));
+    await db.insert(DeactivatedUser).values({
+      userId: userInfo[0].id,
+      fullname: userInfo[0].fullname,
+      username: userInfo[0].username,
+      usageDays: sql`CAST(EXTRACT(JULIAN FROM now()) - EXTRACT(JULIAN FROM ${userInfo[0].createdOn.toISOString()}) AS INTEGER)`,
+    });
+    await db.delete(User).where(eq(User.id, userId));
+  } catch (error: any) {
+    console.error(error);
+
+    throw new Error(
+      `${constants.commonServerError.internal} - ${constants.debugErrorCodes.userComponent.deactivate}`
+    );
   }
 };

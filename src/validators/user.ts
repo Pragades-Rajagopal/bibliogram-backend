@@ -51,8 +51,13 @@ export const loginValidation = [
 ];
 
 export const deactivateUserValidation = [
-  body("userId").exists().not().isEmpty().withMessage("userId is mandatory"),
-  (request: Request, response: Response, next: NextFunction) => {
+  body("userId")
+    .exists()
+    .not()
+    .isEmpty()
+    .isUUID()
+    .withMessage("userId is mandatory and should be an UUID"),
+  (request: Request, response: Response, next: NextFunction): any => {
     const validationError = validationResult(request);
     if (!validationError.isEmpty()) {
       return response.status(constants.statusCode.error).json({
@@ -66,12 +71,13 @@ export const deactivateUserValidation = [
 ];
 
 export const logoutValidation = [
-  body("username")
+  body("userId")
     .exists()
     .not()
     .isEmpty()
-    .withMessage("username is mandatory"),
-  (request: Request, response: Response, next: NextFunction) => {
+    .isUUID()
+    .withMessage("userId is mandatory and should be an UUID"),
+  (request: Request, response: Response, next: NextFunction): any => {
     const validationError = validationResult(request);
     if (!validationError.isEmpty()) {
       return response.status(constants.statusCode.error).json({
