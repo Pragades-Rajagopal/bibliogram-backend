@@ -123,6 +123,7 @@ export const deactivateUserModel = async (userId: string): Promise<any> => {
       })
       .from(User)
       .where(and(eq(User.id, userId), eq(User.status, "active")));
+    // TODO: fix usage days logic
     await db.insert(DeactivatedUser).values({
       userId: userInfo[0].id,
       fullname: userInfo[0].fullname,
