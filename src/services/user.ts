@@ -3,7 +3,6 @@ import constants from "../config/constants";
 import { db } from "../drizzle/db";
 import { DeactivatedUser, User, UserLogin } from "../drizzle/schema";
 import { SaveUserRequest } from "../interfaces/user";
-import { timestamp } from "drizzle-orm/pg-core";
 
 /**
  * Saves user upon registration

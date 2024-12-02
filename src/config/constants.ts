@@ -20,6 +20,9 @@ export default {
       updateLogout: "EU003",
       deactivate: "EU004",
     },
+    bookComponent: {
+      bulkAdd: "EB000",
+    },
   },
   user: {
     registered: "User registered successfully",

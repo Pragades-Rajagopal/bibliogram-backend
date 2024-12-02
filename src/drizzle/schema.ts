@@ -10,6 +10,7 @@ import {
   decimal,
   date,
   index,
+  boolean,
 } from "drizzle-orm/pg-core";
 
 export const UserStatus = pgEnum("user_status", ["active", "inactive"]);
@@ -48,12 +49,6 @@ export const DeactivatedUser = pgTable("deactivated_user", {
   usageDays: integer("usage_days"),
 });
 
-export const UserLoginRelations = relations(UserLogin, ({ many }) => {
-  return {
-    user: many(User),
-  };
-});
-
 export const Book = pgTable(
   "book",
   {
@@ -63,8 +58,10 @@ export const Book = pgTable(
     summary: varchar("summary"),
     rating: decimal("rating"),
     pages: integer("pages"),
-    role: UserRole("role").notNull().default("user"),
     publishedOn: date("published_on"),
+    createdBy: uuid("created_by")
+      .references(() => User.id)
+      .notNull(),
     createdOn: timestamp("created_on").notNull().defaultNow(),
   },
   (table) => [
@@ -73,32 +70,100 @@ export const Book = pgTable(
   ]
 );
 
-// CREATE TABLE IF NOT EXISTS book_notes (
-//   id INTEGER PRIMARY KEY,
-//   user_id INTEGER,
-//   book_id INTEGER,
-//   notes TEXT NOT NULL,
-//   is_private INTEGER CHECK( is_private IN (0, 1) ) NOT NULL DEFAULT 1,
-//   created_on DATETIME NOT NULL,
-//   modified_on DATETIME NOT NULL,
-//   FOREIGN KEY (user_id) REFERENCES users (id),
-//   FOREIGN KEY (book_id) REFERENCES books (id)
-// );
+export const Note = pgTable(
+  "note",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .references(() => User.id)
+      .notNull(),
+    bookId: uuid("book_id")
+      .references(() => Book.id)
+      .notNull(),
+    note: varchar("note").notNull(),
+    isPrivate: boolean("is_private").notNull().default(true),
+    createdOn: timestamp("created_on").notNull().defaultNow(),
+    modifiedOn: timestamp("modified_on").notNull().defaultNow(),
+  },
+  (table) => [
+    index("note_user_index").on(table.userId),
+    index("note_book_index").on(table.bookId),
+  ]
+);
 
-// CREATE TABLE IF NOT EXISTS comments (
-//   id INTEGER PRIMARY KEY,
-//   user_id INTEGER,
-//   note_id INTEGER,
-//   comment TEXT NOT NULL,
-//   created_on DATETIME NOT NULL,
-//   FOREIGN KEY (user_id) REFERENCES users (id),
-//   FOREIGN KEY (note_id) REFERENCES book_notes (id)
-// );
+export const Comment = pgTable(
+  "comment",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .references(() => User.id)
+      .notNull(),
+    noteId: uuid("note_id")
+      .references(() => Note.id)
+      .notNull(),
+    comment: varchar("comment").notNull(),
+    createdOn: timestamp("created_on").notNull().defaultNow(),
+  },
+  (table) => [
+    index("comment_user_index").on(table.userId),
+    index("comment_note_index").on(table.noteId),
+  ]
+);
 
-// CREATE TABLE IF NOT EXISTS saved_notes (
-//   user_id INTEGER,
-//   note_id INTEGER,
-//   FOREIGN KEY (user_id) REFERENCES users (id),
-//   FOREIGN KEY (note_id) REFERENCES book_notes (id),
-//   PRIMARY KEY (user_id, note_id)
-// );
+export const Bookmark = pgTable(
+  "bookmark",
+  {
+    userId: uuid("user_id")
+      .references(() => User.id)
+      .notNull(),
+    noteId: uuid("note_id")
+      .references(() => Note.id)
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("bookmark_composite_index").on(table.userId, table.noteId),
+  ]
+);
+
+/**
+ * Relations
+ */
+
+export const UserLoginRelations = relations(UserLogin, ({ many }) => {
+  return {
+    user: many(User),
+  };
+});
+
+export const BookRelations = relations(Book, ({ many }) => {
+  return {
+    user: many(User),
+  };
+});
+
+export const NoteRelations = relations(Note, ({ many }) => {
+  return {
+    user: many(User),
+    book: many(Book),
+  };
+});
+
+export const CommentRelations = relations(Comment, ({ many }) => {
+  return {
+    user: many(User),
+    note: many(Note),
+  };
+});
+
+export const BookmarkRelations = relations(Bookmark, ({ one }) => {
+  return {
+    user: one(User, {
+      fields: [Bookmark.userId],
+      references: [User.id],
+    }),
+    note: one(Note, {
+      fields: [Bookmark.noteId],
+      references: [Note.id],
+    }),
+  };
+});

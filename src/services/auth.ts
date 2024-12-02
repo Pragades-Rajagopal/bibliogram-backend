@@ -18,7 +18,7 @@ export const generateToken = (payload: object): string => {
 };
 
 export const authenticateToken = (
-  req: Request | any,
+  req: Request,
   res: Response,
   next: NextFunction
 ): any => {
@@ -54,7 +54,7 @@ export const authenticateToken = (
           message: constants.authenticationMessage.unauthorized,
         });
       }
-      req.user = data;
+      req.userId = data?.id;
       next();
     }
   );

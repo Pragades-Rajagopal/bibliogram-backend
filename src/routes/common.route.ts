@@ -2,6 +2,7 @@ import { Router } from "express";
 const router = Router();
 // Components
 import * as UserComponent from "../components/User";
+import * as BookComponent from "../components/Book";
 //Validators
 import * as userValidators from "../validators/user";
 import { authenticateToken } from "../services/auth";
@@ -26,6 +27,16 @@ router.post(
   authenticateToken,
   userValidators.deactivateUserValidation,
   UserComponent.deactivateUser
+);
+
+/**
+ * Book routes
+ */
+router.post(
+  "/books",
+  authenticateToken,
+  // bookValidations.addBooksValidation,
+  BookComponent.bulkAddBooks
 );
 
 export default router;
