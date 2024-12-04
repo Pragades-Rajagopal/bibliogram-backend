@@ -1,3 +1,5 @@
+import { ValidationError } from "express-validator";
+
 export const responseObject = (
   statusCode: number,
   message: string,
@@ -7,6 +9,8 @@ export const responseObject = (
     privateKey?: string;
     token?: string;
     code?: number;
+    count?: number;
+    validationErrors?: Record<string, ValidationError>;
   }
 ) => {
   return {
@@ -17,5 +21,7 @@ export const responseObject = (
     privateKey: optional?.privateKey,
     token: optional?.token,
     code: optional?.code,
+    count: optional?.count,
+    validationErrors: optional?.validationErrors,
   };
 };

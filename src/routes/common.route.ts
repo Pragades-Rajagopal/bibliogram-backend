@@ -5,6 +5,7 @@ import * as UserComponent from "../components/User";
 import * as BookComponent from "../components/Book";
 //Validators
 import * as userValidators from "../validators/user";
+import * as bookValidators from "../validators/book";
 import { authenticateToken } from "../services/auth";
 
 /**
@@ -35,8 +36,22 @@ router.post(
 router.post(
   "/books",
   authenticateToken,
-  // bookValidations.addBooksValidation,
+  bookValidators.addBooksValidation,
   BookComponent.bulkAddBooks
 );
+router.get(
+  "/book/:id",
+  authenticateToken,
+  bookValidators.getBookByIdValidation,
+  BookComponent.getBookById
+);
+router.get("/books", authenticateToken, BookComponent.getAllBooks);
+router.get("/top-books", authenticateToken, BookComponent.getTopBooks);
+// router.delete(
+//   "/books",
+//   authenticateToken,
+//   bookValidations.deleteBooksValidation,
+//   BookComponent.deleteBooks
+// );
 
 export default router;

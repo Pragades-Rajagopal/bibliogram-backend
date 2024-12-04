@@ -22,6 +22,9 @@ export default {
     },
     bookComponent: {
       bulkAdd: "EB000",
+      getBooks: "EB001",
+      getBookById: "EB002",
+      getTopBooks: "EB003",
     },
   },
   user: {
