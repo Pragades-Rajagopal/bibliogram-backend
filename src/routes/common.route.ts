@@ -3,9 +3,11 @@ const router = Router();
 // Components
 import * as UserComponent from "../components/User";
 import * as BookComponent from "../components/Book";
+import * as NoteComponent from "../components/Note";
 //Validators
 import * as userValidators from "../validators/user";
 import * as bookValidators from "../validators/book";
+import * as noteValidators from "../validators/note";
 import { authenticateToken } from "../services/auth";
 
 /**
@@ -47,11 +49,33 @@ router.get(
 );
 router.get("/books", authenticateToken, BookComponent.getAllBooks);
 router.get("/top-books", authenticateToken, BookComponent.getTopBooks);
+router.delete(
+  "/books",
+  authenticateToken,
+  bookValidators.deleteBooksValidation,
+  BookComponent.deleteBooks
+);
+
+/**
+ * Note routes
+ */
+router.put(
+  "/note",
+  authenticateToken,
+  noteValidators.addOrUpdateValidation,
+  NoteComponent.upsertNote
+);
+// router.get("/book-notes/:id", authenticateToken, NoteComponent.getNote);
+// router.get("/book-notes", authenticateToken, NoteComponent.getNotesByQuery);
 // router.delete(
-//   "/books",
+//   "/book-notes/:id",
 //   authenticateToken,
-//   bookValidations.deleteBooksValidation,
-//   BookComponent.deleteBooks
+//   NoteComponent.deleteNote
+// );
+// router.get(
+//   "/book-notes-visibility/:id/:flag",
+//   authenticateToken,
+//   NoteComponent.updateNoteVisibility
 // );
 
 export default router;

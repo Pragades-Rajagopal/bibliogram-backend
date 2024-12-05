@@ -25,6 +25,10 @@ export default {
       getBooks: "EB001",
       getBookById: "EB002",
       getTopBooks: "EB003",
+      bulkDelete: "EB004",
+    },
+    noteComponent: {
+      save: "EN000",
     },
   },
   user: {
@@ -67,7 +71,7 @@ export default {
     deleteSuccess: "Book(s) deleted successfully",
     deleteError: "Error while deleting books",
   },
-  bookNote: {
+  note: {
     addSuccess: "Note added successfully",
     addOrUpdateFailure: "Error while adding/updating note",
     found: "Note found",

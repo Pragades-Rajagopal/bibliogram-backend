@@ -8,14 +8,14 @@ export interface IBook {
   createdBy: string;
 }
 
-export interface IBookNote {
-  id: number;
-  userId: number;
-  bookId: number;
+export interface INote {
+  id?: string;
+  userId: string;
+  bookId: string;
   note: string;
-  created_on: string;
-  modified_on: string;
-  isPrivate: number;
+  created_on?: string;
+  modified_on?: string;
+  isPrivate: boolean;
 }
 
 export interface IComment {

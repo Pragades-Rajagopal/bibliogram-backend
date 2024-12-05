@@ -47,7 +47,7 @@ export const getBookByIdValidation = [
 ];
 
 export const deleteBooksValidation = [
-  body("bookIds").isArray().exists().not().isEmpty().isNumeric(),
+  body("bookIds").isArray().exists().not().isEmpty().isUUID(),
   (request: Request, response: Response, next: NextFunction): any => {
     const validationError = validationResult(request);
     if (!validationError.isEmpty()) {

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import constants from "../config/constants";
 import {
   bulkInsertBookModel,
+  deleteBookModel,
   getAllBooksModel,
   getBook,
   getTopBooksModel,
@@ -166,6 +167,41 @@ export const getTopBooks = async (
         responseObject(
           constants.statusCode.serverError,
           constants.books.getTopBooksError
+        )
+      );
+  }
+};
+
+/**
+ * Deletes books in bulk
+ * @param {Request} request
+ * @param {Response} response
+ * @returns {Promise<Response>}
+ */
+export const deleteBooks = async (
+  request: Request,
+  response: Response
+): Promise<any> => {
+  try {
+    const { bookIds } = request.body;
+    await deleteBookModel(bookIds);
+    return response
+      .status(constants.statusCode.success)
+      .json(
+        responseObject(
+          constants.statusCode.success,
+          constants.books.deleteSuccess
+        )
+      );
+  } catch (error) {
+    console.error(constants.books.deleteError);
+    console.error(error);
+    return response
+      .status(constants.statusCode.serverError)
+      .json(
+        responseObject(
+          constants.statusCode.serverError,
+          constants.books.deleteError
         )
       );
   }

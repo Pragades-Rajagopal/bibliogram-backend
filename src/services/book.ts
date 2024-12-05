@@ -1,4 +1,4 @@
-import { desc, eq, ilike, or, asc, count, sql } from "drizzle-orm";
+import { desc, eq, ilike, or, asc, count, sql, inArray } from "drizzle-orm";
 import constants from "../config/constants";
 import { db } from "../drizzle/db";
 import { Book, Note } from "../drizzle/schema";
@@ -118,6 +118,22 @@ export const getTopBooksModel = async (): Promise<any> => {
     console.error(error);
     throw new Error(
       `${constants.commonServerError.internal} - ${constants.debugErrorCodes.bookComponent.getTopBooks}`
+    );
+  }
+};
+
+/**
+ * Deletes books in bulk
+ * @param {string[]}ids
+ * @returns {Promise}
+ */
+export const deleteBookModel = async (ids: string[]): Promise<any> => {
+  try {
+    await db.delete(Book).where(inArray(Book.id, ids));
+  } catch (error) {
+    console.error(error);
+    throw new Error(
+      `${constants.commonServerError.internal} - ${constants.debugErrorCodes.bookComponent.bulkDelete}`
     );
   }
 };
