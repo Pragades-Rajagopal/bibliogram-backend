@@ -117,4 +117,28 @@ CREATE INDEX IF NOT EXISTS "comment_user_index" ON "comment" USING btree ("user_
 CREATE INDEX IF NOT EXISTS "comment_note_index" ON "comment" USING btree ("note_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "note_user_index" ON "note" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "note_book_index" ON "note" USING btree ("book_id");--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS "username_index" ON "user_table" USING btree ("username");
+CREATE UNIQUE INDEX IF NOT EXISTS "username_index" ON "user_table" USING btree ("username");--> statement-breakpoint
+CREATE VIEW "public"."notes_vw" AS (
+  select
+    n.*,
+    u.fullname as user,
+    b.name as book_name,
+    b.author,
+    (
+    select
+      COUNT(1)
+    from
+      comment c
+    where
+      c.note_id = n.id
+        ) as comments,
+    TO_CHAR(n.modified_on,
+    'DD') || ' ' || TO_CHAR(n.modified_on,
+    'Mon') as short_date
+  from
+    note n
+  join user_table u on
+    n.user_id = u.id
+  join book b on
+    n.book_id = b.id
+  );

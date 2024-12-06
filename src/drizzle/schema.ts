@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   uniqueIndex,
   integer,
@@ -11,6 +11,8 @@ import {
   date,
   index,
   boolean,
+  pgView,
+  text,
 } from "drizzle-orm/pg-core";
 
 export const UserStatus = pgEnum("user_status", ["active", "inactive"]);
@@ -167,3 +169,72 @@ export const BookmarkRelations = relations(Bookmark, ({ one }) => {
     }),
   };
 });
+
+/**
+ * Views
+ */
+
+// CREATE VIEW IF NOT EXISTS book_notes_vw
+// AS
+// SELECT
+// 	bn.*,
+// 	u.fullname AS user,
+// 	b.name AS book_name,
+// 	b.author,
+// 	(
+// 	SELECT
+// 		COUNT(1)
+// 	FROM
+// 		comments c
+// 	WHERE
+// 		c.note_id = bn.id) AS comments,
+// 	STRFTIME('%d',
+// 	bn.modified_on) || ' ' || SUBSTR('JanFebMarAprMayJunJulAugSepOctNovDec',
+// 	1 + 3 * STRFTIME('%m',
+// 	bn.modified_on),
+// 	-3) AS short_date
+// FROM
+// 	book_notes bn,
+// 	users u,
+// 	books b
+// WHERE
+// 	bn.book_id = b.id
+// 	AND bn.user_id = u.id;
+
+export const notesView = pgView("notes_vw", {
+  id: text("id"), // Adjust according to your actual column types
+  userId: text("user_id"),
+  bookId: text("book_id"),
+  note: text("note"),
+  isPrivate: boolean("is_private"),
+  createdOn: timestamp("created_on"),
+  modifiedOn: timestamp("modified_on"),
+  user: text("user"),
+  book: text("book_name"),
+  author: text("author"),
+  comments: integer("comments"), // Assuming comments is an integer count
+  short_date: text("short_date"),
+}).as(sql`
+  select
+    n.*,
+    u.fullname as user,
+    b.name as book_name,
+    b.author,
+    (
+    select
+      COUNT(1)
+    from
+      comment c
+    where
+      c.note_id = n.id
+        ) as comments,
+    TO_CHAR(n.modified_on,
+    'DD') || ' ' || TO_CHAR(n.modified_on,
+    'Mon') as short_date
+  from
+    note n
+  join user_table u on
+    n.user_id = u.id
+  join book b on
+    n.book_id = b.id;
+  `);

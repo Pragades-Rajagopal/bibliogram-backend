@@ -10,4 +10,7 @@ export default defineConfig({
   verbose: true,
   strict: true,
   casing: "snake_case",
+  migrations: {
+    schema: "public",
+  },
 });
