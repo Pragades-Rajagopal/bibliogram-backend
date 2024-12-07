@@ -1,12 +1,12 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, sql, desc } from "drizzle-orm";
 import constants from "../config/constants";
 import { db } from "../drizzle/db";
-import { Note } from "../drizzle/schema";
-import { INote } from "../interfaces/book";
+import { Bookmark, BookmarkView, Note, NoteView } from "../drizzle/schema";
+import { INote, IBookmarkNote } from "../interfaces/book";
 
 /**
  * Add note for the given `book_id`
- * @param {BookNote} data
+ * @param {INote} data
  * @returns {Promise}
  */
 export const upsertNoteModel = async (data: INote): Promise<any> => {
@@ -54,47 +54,141 @@ export const upsertNoteModel = async (data: INote): Promise<any> => {
  * @param {string} offset
  * @returns {Promise}
  */
-// export const getNoteModel = (
-//   noteId?: string,
-//   bookId?: string,
-//   userId?: string,
-//   limit?: string,
-//   offset?: string
-// ): Promise<any> => {
-//   // For global notes
-//   let sql: string =
-//     userId || bookId || noteId
-//       ? `SELECT * FROM book_notes_vw`
-//       : `SELECT * FROM book_notes_vw WHERE is_private=0`;
-//   if (noteId) {
-//     // Get note by id
-//     sql = sql + ` WHERE id=${noteId}`;
-//   }
-//   if (bookId && userId) {
-//     sql =
-//       sql + ` WHERE book_id=${bookId} AND user_id=${userId} AND is_private=0`;
-//   } else if (bookId) {
-//     // Get all public notes for the given book
-//     sql = sql + ` WHERE book_id=${bookId} AND is_private=0`;
-//   } else if (userId) {
-//     // Get all notes for the given user
-//     sql = sql + ` WHERE user_id=${userId}`;
-//   }
-//   sql = sql + ` ORDER BY modified_on DESC`;
-//   if (limit) {
-//     sql = sql + ` LIMIT ${limit}`;
-//   }
-//   if (offset) {
-//     sql = sql + ` OFFSET ${offset}`;
-//   }
-//   return new Promise((resolve, reject): any => {
-//     console.log(`sql > ${sql}`);
-//     appDB.all(sql, [], (err, data) => {
-//       if (err) {
-//         reject("Error at getNoteModel method");
-//       } else {
-//         resolve(data);
-//       }
-//     });
-//   });
-// };
+export const getNoteModel = async (
+  noteId?: string,
+  bookId?: string,
+  userId?: string,
+  limit?: string,
+  offset?: string
+): Promise<any> => {
+  try {
+    let whereClause;
+    if (noteId) {
+      // Get note by id
+      whereClause = eq(NoteView.id, noteId);
+    }
+    if (bookId && userId) {
+      whereClause = and(
+        eq(NoteView.bookId, bookId),
+        eq(NoteView.userId, userId),
+        eq(NoteView.isPrivate, false)
+      );
+    } else if (bookId) {
+      // Get all public notes for the given book
+      whereClause = and(
+        eq(NoteView.bookId, bookId),
+        eq(NoteView.isPrivate, false)
+      );
+    } else if (userId) {
+      // Get all notes for the given user
+      whereClause = and(
+        eq(NoteView.userId, userId),
+        eq(NoteView.isPrivate, false)
+      );
+    }
+    return await db
+      .select()
+      .from(NoteView)
+      .where(whereClause ?? eq(NoteView.isPrivate, false))
+      .orderBy(desc(NoteView.modifiedOn))
+      .limit(limit ? parseInt(limit!) : 10)
+      .offset(parseInt(offset! ?? undefined));
+  } catch (error: any) {
+    console.error(error);
+    throw new Error(
+      `${constants.commonServerError.internal} - ${constants.debugErrorCodes.noteComponent.get}`
+    );
+  }
+};
+
+/**
+ * Update the note visibility
+ * @param {string} id
+ * @param {string} flag 'public' | 'private'
+ * @returns {Promise}
+ */
+export const updateNoteVisibilityModel = async (
+  id: string,
+  flag: string
+): Promise<any> => {
+  try {
+    return await db
+      .update(Note)
+      .set({
+        isPrivate: flag === "private" ? true : false,
+        modifiedOn: sql<string>`now()`,
+      })
+      .where(eq(Note.id, id))
+      .returning({
+        id: Note.id,
+      });
+  } catch (error: any) {
+    console.error(error);
+    throw new Error(
+      `${constants.commonServerError.internal} - ${constants.debugErrorCodes.noteComponent.updateVisibility}`
+    );
+  }
+};
+
+/**
+ * Deletes a note
+ * @param {string} id
+ * @returns {Promise}
+ */
+export const deleteNoteModel = async (id: string): Promise<any> => {
+  try {
+    return await db.delete(Note).where(eq(Note.id, id)).returning({
+      id: Note.id,
+    });
+  } catch (error) {
+    console.error(error);
+    throw new Error(
+      `${constants.commonServerError.internal} - ${constants.debugErrorCodes.noteComponent.delete}`
+    );
+  }
+};
+
+/**
+ * Bookmark a note for later
+ * @param {IBookmarkNote} data
+ * @returns {Promise}
+ */
+export const saveBookmarkModel = async (data: IBookmarkNote): Promise<any> => {
+  try {
+    return await db
+      .insert(Bookmark)
+      .values({
+        userId: data.userId,
+        noteId: data.noteId,
+      })
+      .returning({
+        id: Bookmark.noteId,
+      });
+  } catch (error: any) {
+    if (error?.code === "23503")
+      throw new Error(
+        `${constants.assetValidation.userNotExists} or ${constants.assetValidation.bookNotExists}`
+      );
+    if (error?.code === "23505") throw new Error(constants.bookmark.exists);
+    throw new Error(error?.message);
+  }
+};
+
+/**
+ * Get bookmarks for an user
+ * @param {string} userId
+ * @returns {Promise<any>}
+ */
+export const getBookmarksModel = async (userId: string): Promise<any> => {
+  try {
+    return await db
+      .select()
+      .from(BookmarkView)
+      .where(eq(BookmarkView.userId, userId));
+  } catch (error) {
+    console.error(error);
+    throw new Error(
+      `${constants.commonServerError.internal} - ${constants.debugErrorCodes.bookmarkNoteComponent.get}`
+    );
+  }
+};

@@ -101,7 +101,7 @@ export const Comment = pgTable(
       .references(() => User.id)
       .notNull(),
     noteId: uuid("note_id")
-      .references(() => Note.id)
+      .references(() => Note.id, { onDelete: "cascade" })
       .notNull(),
     comment: varchar("comment").notNull(),
     createdOn: timestamp("created_on").notNull().defaultNow(),
@@ -174,35 +174,8 @@ export const BookmarkRelations = relations(Bookmark, ({ one }) => {
  * Views
  */
 
-// CREATE VIEW IF NOT EXISTS book_notes_vw
-// AS
-// SELECT
-// 	bn.*,
-// 	u.fullname AS user,
-// 	b.name AS book_name,
-// 	b.author,
-// 	(
-// 	SELECT
-// 		COUNT(1)
-// 	FROM
-// 		comments c
-// 	WHERE
-// 		c.note_id = bn.id) AS comments,
-// 	STRFTIME('%d',
-// 	bn.modified_on) || ' ' || SUBSTR('JanFebMarAprMayJunJulAugSepOctNovDec',
-// 	1 + 3 * STRFTIME('%m',
-// 	bn.modified_on),
-// 	-3) AS short_date
-// FROM
-// 	book_notes bn,
-// 	users u,
-// 	books b
-// WHERE
-// 	bn.book_id = b.id
-// 	AND bn.user_id = u.id;
-
-export const notesView = pgView("notes_vw", {
-  id: text("id"), // Adjust according to your actual column types
+export const NoteView = pgView("note_vw", {
+  id: text("id"),
   userId: text("user_id"),
   bookId: text("book_id"),
   note: text("note"),
@@ -212,11 +185,17 @@ export const notesView = pgView("notes_vw", {
   user: text("user"),
   book: text("book_name"),
   author: text("author"),
-  comments: integer("comments"), // Assuming comments is an integer count
+  comments: integer("comments"),
   short_date: text("short_date"),
-}).as(sql`
+}).as(sql<string>`
   select
-    n.*,
+    n.id,
+    n.user_id,
+    n.book_id,
+    n.note,
+    n.is_private,
+    n.created_on,
+    n.modified_on,
     u.fullname as user,
     b.name as book_name,
     b.author,
@@ -236,5 +215,28 @@ export const notesView = pgView("notes_vw", {
   join user_table u on
     n.user_id = u.id
   join book b on
-    n.book_id = b.id;
-  `);
+    n.book_id = b.id  
+`);
+
+export const BookmarkView = pgView("bookmark_vw", {
+  id: text("id"),
+  userId: text("user_id"),
+  bookId: text("book_id"),
+  note: text("note"),
+  isPrivate: boolean("is_private"),
+  createdOn: timestamp("created_on"),
+  modifiedOn: timestamp("modified_on"),
+  user: text("user"),
+  book: text("book_name"),
+  author: text("author"),
+  comments: integer("comments"),
+  short_date: text("short_date"),
+}).as(sql<string>`
+  select
+    nv.*
+  from
+    note_vw nv,
+    bookmark b
+  where
+    nv.id = b.note_id
+`);

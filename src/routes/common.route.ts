@@ -65,17 +65,55 @@ router.put(
   noteValidators.addOrUpdateValidation,
   NoteComponent.upsertNote
 );
-// router.get("/book-notes/:id", authenticateToken, NoteComponent.getNote);
-// router.get("/book-notes", authenticateToken, NoteComponent.getNotesByQuery);
+router.get(
+  "/note/:id",
+  authenticateToken,
+  noteValidators.idValidation,
+  NoteComponent.getNoteById
+);
+router.get(
+  "/notes",
+  authenticateToken,
+  noteValidators.getNotesByQueryValidation,
+  NoteComponent.getNotesByQuery
+);
+router.delete(
+  "/note/:id",
+  authenticateToken,
+  noteValidators.idValidation,
+  NoteComponent.deleteNote
+);
+router.get(
+  "/note-visibility/:id/:flag",
+  authenticateToken,
+  noteValidators.updateVisibilityValidation,
+  NoteComponent.updateNoteVisibility
+);
+
+/**
+ * Bookmark routes
+ */
+router.post(
+  "/bookmark",
+  authenticateToken,
+  noteValidators.saveBookmarkValidation,
+  NoteComponent.bookmarkNote
+);
+router.get(
+  "/bookmark/:id",
+  authenticateToken,
+  noteValidators.idValidation,
+  NoteComponent.getBookmarks
+);
 // router.delete(
-//   "/book-notes/:id",
+//   "/save-later/:noteId/:userId",
 //   authenticateToken,
-//   NoteComponent.deleteNote
+//   BookNoteComponent.deleteSavedNoteForLater
 // );
 // router.get(
-//   "/book-notes-visibility/:id/:flag",
+//   "/is-saved-note/:noteId/:userId",
 //   authenticateToken,
-//   NoteComponent.updateNoteVisibility
+//   BookNoteComponent.isNoteSavedForLater
 // );
 
 export default router;

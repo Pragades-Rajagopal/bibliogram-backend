@@ -87,7 +87,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "comment" ADD CONSTRAINT "comment_note_id_note_id_fk" FOREIGN KEY ("note_id") REFERENCES "public"."note"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "comment" ADD CONSTRAINT "comment_note_id_note_id_fk" FOREIGN KEY ("note_id") REFERENCES "public"."note"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -118,9 +118,15 @@ CREATE INDEX IF NOT EXISTS "comment_note_index" ON "comment" USING btree ("note_
 CREATE INDEX IF NOT EXISTS "note_user_index" ON "note" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "note_book_index" ON "note" USING btree ("book_id");--> statement-breakpoint
 CREATE UNIQUE INDEX IF NOT EXISTS "username_index" ON "user_table" USING btree ("username");--> statement-breakpoint
-CREATE VIEW "public"."notes_vw" AS (
+CREATE VIEW "public"."note_vw" AS (
   select
-    n.*,
+    n.id,
+    n.user_id,
+    n.book_id,
+    n.note,
+    n.is_private,
+    n.created_on,
+    n.modified_on,
     u.fullname as user,
     b.name as book_name,
     b.author,
@@ -140,5 +146,14 @@ CREATE VIEW "public"."notes_vw" AS (
   join user_table u on
     n.user_id = u.id
   join book b on
-    n.book_id = b.id
-  );
+    n.book_id = b.id  
+);--> statement-breakpoint
+CREATE VIEW "public"."bookmark_vw" AS (
+  select
+    nv.*
+  from
+    note_vw nv,
+    bookmark b
+  where
+    nv.id = b.note_id
+);

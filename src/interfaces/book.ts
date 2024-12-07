@@ -19,15 +19,15 @@ export interface INote {
 }
 
 export interface IComment {
-  id: number;
-  userId: number;
-  noteId: number;
+  id: string;
+  userId: string;
+  noteId: string;
   comment: string;
   created_on: string;
 }
 
-export interface ISaveNote {
-  id: number;
-  userId: number;
-  noteId: number;
+export interface IBookmarkNote {
+  id?: string;
+  userId: string;
+  noteId: string;
 }
