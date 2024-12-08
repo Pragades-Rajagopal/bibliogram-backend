@@ -105,15 +105,17 @@ router.get(
   noteValidators.idValidation,
   NoteComponent.getBookmarks
 );
-// router.delete(
-//   "/save-later/:noteId/:userId",
-//   authenticateToken,
-//   BookNoteComponent.deleteSavedNoteForLater
-// );
-// router.get(
-//   "/is-saved-note/:noteId/:userId",
-//   authenticateToken,
-//   BookNoteComponent.isNoteSavedForLater
-// );
+router.delete(
+  "/bookmark/:noteId/:userId",
+  authenticateToken,
+  noteValidators.bookmarkParamsValidation,
+  NoteComponent.deleteBookmark
+);
+router.get(
+  "/is-bookmarked/:noteId/:userId",
+  authenticateToken,
+  noteValidators.bookmarkParamsValidation,
+  NoteComponent.isBookmarked
+);
 
 export default router;

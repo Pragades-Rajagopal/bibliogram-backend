@@ -137,3 +137,30 @@ export const saveBookmarkValidation = [
     next();
   },
 ];
+
+export const bookmarkParamsValidation = [
+  param("userId")
+    .exists()
+    .not()
+    .isEmpty()
+    .isUUID()
+    .withMessage("userId is mandatory and should be an UUID"),
+  param("noteId")
+    .exists()
+    .not()
+    .isEmpty()
+    .isUUID()
+    .withMessage("noteId is mandatory and should be an UUID"),
+  (request: Request, response: Response, next: NextFunction): any => {
+    const validationError = validationResult(request);
+    if (!validationError.isEmpty()) {
+      return response.status(constants.statusCode.error).json(
+        responseObject(constants.statusCode.error, "", {
+          error: constants.commonServerError.badRequest,
+          validationErrors: validationError.mapped(),
+        })
+      );
+    }
+    next();
+  },
+];

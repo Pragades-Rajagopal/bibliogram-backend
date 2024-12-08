@@ -1,5 +1,5 @@
 {
-  "id": "ba3467d7-a716-4ead-a2ba-2b387a0514d9",
+  "id": "1453565d-89aa-41b1-a607-130b8892cfbf",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -700,6 +700,57 @@
       },
       "definition": "\n  select\n    nv.*\n  from\n    note_vw nv,\n    bookmark b\n  where\n    nv.id = b.note_id\n",
       "name": "bookmark_vw",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    },
+    "public.comment_vw": {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "note_id": {
+          "name": "note_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_on": {
+          "name": "created_on",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user": {
+          "name": "user",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "short_date": {
+          "name": "short_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "definition": "\n  select\n    c.*,\n    u.fullname as \"user\",\n    TO_CHAR(c.created_on,\n    'DD') || ' ' || TO_CHAR(c.created_on,\n    'Mon') as short_date\n  from\n    comment c,\n    user_table u\n  where\n    c.user_id = u.id\n",
+      "name": "comment_vw",
       "schema": "public",
       "isExisting": false,
       "materialized": false

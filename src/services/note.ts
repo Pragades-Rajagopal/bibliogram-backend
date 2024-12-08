@@ -5,7 +5,7 @@ import { Bookmark, BookmarkView, Note, NoteView } from "../drizzle/schema";
 import { INote, IBookmarkNote } from "../interfaces/book";
 
 /**
- * Add note for the given `book_id`
+ * Add/update note
  * @param {INote} data
  * @returns {Promise}
  */
@@ -189,6 +189,56 @@ export const getBookmarksModel = async (userId: string): Promise<any> => {
     console.error(error);
     throw new Error(
       `${constants.commonServerError.internal} - ${constants.debugErrorCodes.bookmarkNoteComponent.get}`
+    );
+  }
+};
+
+/**
+ * Deletes bookmark
+ * @param {string} noteId
+ * @param {string} userId
+ * @returns {Promise}
+ */
+export const deleteBookmarkModel = async (
+  noteId: string,
+  userId: string
+): Promise<any> => {
+  try {
+    return await db
+      .delete(Bookmark)
+      .where(and(eq(Bookmark.noteId, noteId), eq(Bookmark.userId, userId)))
+      .returning({
+        noteId: Bookmark.noteId,
+      });
+  } catch (error: any) {
+    console.error(error);
+    throw new Error(
+      `${constants.commonServerError.internal} - ${constants.debugErrorCodes.bookmarkNoteComponent.remove}`
+    );
+  }
+};
+
+/**
+ * Checks if the note is bookmarked or not
+ * @param {string} noteId
+ * @param {string} userId
+ * @returns {Promise}
+ */
+export const isNoteBookmarkedModel = async (
+  noteId: string,
+  userId: string
+): Promise<any> => {
+  try {
+    return await db
+      .select({
+        noteId: Bookmark.noteId,
+      })
+      .from(Bookmark)
+      .where(and(eq(Bookmark.noteId, noteId), eq(Bookmark.userId, userId)));
+  } catch (error: any) {
+    console.error(error);
+    throw new Error(
+      `${constants.commonServerError.internal} - ${constants.debugErrorCodes.bookmarkNoteComponent.check}`
     );
   }
 };

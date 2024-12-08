@@ -37,6 +37,12 @@ export default {
       save: "ES000",
       get: "ES001",
       remove: "ES002",
+      check: "ES003",
+    },
+    commentComponent: {
+      upsert: "EC000",
+      get: "EC001",
+      delete: "EC002",
     },
   },
   user: {

@@ -2,9 +2,11 @@ import { Request, Response } from "express";
 import constants from "../config/constants";
 import { IBookmarkNote, INote } from "../interfaces/book";
 import {
+  deleteBookmarkModel,
   deleteNoteModel,
   getBookmarksModel,
   getNoteModel,
+  isNoteBookmarkedModel,
   saveBookmarkModel,
   updateNoteVisibilityModel,
   upsertNoteModel,
@@ -305,6 +307,98 @@ export const getBookmarks = async (
         responseObject(
           constants.statusCode.serverError,
           constants.bookmark.getError
+        )
+      );
+  }
+};
+
+/**
+ * Deletes note bookmark
+ * @param {Request} request
+ * @param {Response} response
+ * @returns {Promise<any>}
+ */
+export const deleteBookmark = async (
+  request: Request,
+  response: Response
+): Promise<any> => {
+  try {
+    const { noteId, userId } = request.params;
+    const result: { noteId: string }[] = await deleteBookmarkModel(
+      noteId,
+      userId
+    );
+    if (!result[0]?.noteId) {
+      return response
+        .status(constants.statusCode.notFound)
+        .json(
+          responseObject(
+            constants.statusCode.notFound,
+            `${constants.assetValidation.userNotExists} or ${constants.assetValidation.noteNotExists}`
+          )
+        );
+    }
+    return response
+      .status(constants.statusCode.success)
+      .json(
+        responseObject(
+          constants.statusCode.success,
+          constants.bookmark.deleteSuccess
+        )
+      );
+  } catch (error) {
+    console.error(constants.bookmark.deleteError);
+    console.error(error);
+    return response
+      .status(constants.statusCode.serverError)
+      .json(
+        responseObject(
+          constants.statusCode.serverError,
+          constants.bookmark.deleteError
+        )
+      );
+  }
+};
+
+/**
+ *
+ * @param {Request} request
+ * @param {Response} response
+ * @returns {Promise<any>}
+ */
+export const isBookmarked = async (
+  request: Request,
+  response: Response
+): Promise<any> => {
+  try {
+    const { noteId, userId } = request.params;
+    const data: [] = await isNoteBookmarkedModel(noteId, userId);
+    if (data && data.length === 0) {
+      return response
+        .status(constants.statusCode.notFound)
+        .json(
+          responseObject(
+            constants.statusCode.notFound,
+            constants.bookmark.notFound,
+            { count: 0 }
+          )
+        );
+    }
+    return response.status(constants.statusCode.success).json(
+      responseObject(constants.statusCode.success, constants.bookmark.found, {
+        count: 1,
+      })
+    );
+  } catch (error) {
+    console.error(constants.bookmark.getError);
+    console.error(error);
+    return response
+      .status(constants.statusCode.serverError)
+      .json(
+        responseObject(
+          constants.statusCode.serverError,
+          constants.bookmark.getError,
+          { count: undefined }
         )
       );
   }

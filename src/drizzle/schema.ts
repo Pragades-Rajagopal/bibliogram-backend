@@ -186,7 +186,7 @@ export const NoteView = pgView("note_vw", {
   book: text("book_name"),
   author: text("author"),
   comments: integer("comments"),
-  short_date: text("short_date"),
+  shortDate: text("short_date"),
 }).as(sql<string>`
   select
     n.id,
@@ -230,7 +230,7 @@ export const BookmarkView = pgView("bookmark_vw", {
   book: text("book_name"),
   author: text("author"),
   comments: integer("comments"),
-  short_date: text("short_date"),
+  shortDate: text("short_date"),
 }).as(sql<string>`
   select
     nv.*
@@ -239,4 +239,26 @@ export const BookmarkView = pgView("bookmark_vw", {
     bookmark b
   where
     nv.id = b.note_id
+`);
+
+export const CommentView = pgView("comment_vw", {
+  id: text("id"),
+  userId: text("user_id"),
+  noteId: text("note_id"),
+  comment: text("comment"),
+  createdOn: timestamp("created_on"),
+  user: text("user"),
+  shortDate: text("short_date"),
+}).as(sql<string>`
+  select
+    c.*,
+    u.fullname as "user",
+    TO_CHAR(c.created_on,
+    'DD') || ' ' || TO_CHAR(c.created_on,
+    'Mon') as short_date
+  from
+    comment c,
+    user_table u
+  where
+    c.user_id = u.id
 `);
