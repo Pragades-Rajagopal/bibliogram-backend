@@ -30,10 +30,11 @@ export const upsertCommentModel = async (data: IComment): Promise<any> => {
         ),
       });
   } catch (error: any) {
-    console.error(error);
-    throw new Error(
-      `${constants.commonServerError.internal} - ${constants.debugErrorCodes.commentComponent.upsert}`
-    );
+    if (error?.code === "23503")
+      throw new Error(
+        `${constants.assetValidation.userNotExists} or ${constants.assetValidation.noteNotExists}`
+      );
+    throw new Error(error?.message);
   }
 };
 

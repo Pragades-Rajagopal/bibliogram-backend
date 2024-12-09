@@ -4,10 +4,14 @@ const router = Router();
 import * as UserComponent from "../components/User";
 import * as BookComponent from "../components/Book";
 import * as NoteComponent from "../components/Note";
+import * as CommentComponent from "../components/Comment";
+import * as SearchComponent from "../components/Search";
 //Validators
 import * as userValidators from "../validators/user";
 import * as bookValidators from "../validators/book";
 import * as noteValidators from "../validators/note";
+import * as commentValidators from "../validators/comment";
+import * as searchValidators from "../validators/search";
 import { authenticateToken } from "../services/auth";
 
 /**
@@ -116,6 +120,44 @@ router.get(
   authenticateToken,
   noteValidators.bookmarkParamsValidation,
   NoteComponent.isBookmarked
+);
+
+/**
+ * Comment routes
+ */
+router.put(
+  "/comment",
+  authenticateToken,
+  commentValidators.upsertCommentValidation,
+  CommentComponent.upsertComment
+);
+router.get(
+  "/comment/:id",
+  authenticateToken,
+  commentValidators.idValidation,
+  CommentComponent.getCommentById
+);
+router.get(
+  "/comment",
+  authenticateToken,
+  commentValidators.getCommentByQueryValidation,
+  CommentComponent.getCommentByQuery
+);
+router.delete(
+  "/comment/:id",
+  authenticateToken,
+  commentValidators.idValidation,
+  CommentComponent.deleteComment
+);
+
+/**
+ * Search route
+ */
+router.get(
+  "/search",
+  authenticateToken,
+  searchValidators.searchValidation,
+  SearchComponent.globalSearch
 );
 
 export default router;
