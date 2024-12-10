@@ -35,7 +35,7 @@ export const User = pgTable(
 export const UserLogin = pgTable("user_login", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id")
-    .references(() => User.id)
+    .references(() => User.id, { onDelete: "cascade" })
     .notNull(),
   token: varchar("token").notNull(),
   loggedIn: timestamp("logged_in").notNull().defaultNow(),
@@ -77,10 +77,10 @@ export const Note = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     userId: uuid("user_id")
-      .references(() => User.id)
+      .references(() => User.id, { onDelete: "cascade" })
       .notNull(),
     bookId: uuid("book_id")
-      .references(() => Book.id)
+      .references(() => Book.id, { onDelete: "cascade" })
       .notNull(),
     note: varchar("note").notNull(),
     isPrivate: boolean("is_private").notNull().default(true),
@@ -98,7 +98,7 @@ export const Comment = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     userId: uuid("user_id")
-      .references(() => User.id)
+      .references(() => User.id, { onDelete: "cascade" })
       .notNull(),
     noteId: uuid("note_id")
       .references(() => Note.id, { onDelete: "cascade" })
@@ -116,10 +116,10 @@ export const Bookmark = pgTable(
   "bookmark",
   {
     userId: uuid("user_id")
-      .references(() => User.id)
+      .references(() => User.id, { onDelete: "cascade" })
       .notNull(),
     noteId: uuid("note_id")
-      .references(() => Note.id)
+      .references(() => Note.id, { onDelete: "cascade" })
       .notNull(),
   },
   (table) => [

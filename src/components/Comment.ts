@@ -20,17 +20,27 @@ export const upsertComment = async (
 ): Promise<any> => {
   try {
     const body: IComment = request.body;
-    await upsertCommentModel(body);
+    const result: { id: string }[] = await upsertCommentModel(body);
+    if (!result[0]?.id) {
+      return response
+        .status(constants.statusCode.error)
+        .json(
+          responseObject(
+            constants.statusCode.error,
+            constants.comment.upsertBadRequest
+          )
+        );
+    }
     return response
       .status(constants.statusCode.success)
       .json(
         responseObject(
           constants.statusCode.success,
-          constants.comment.addSuccess
+          constants.comment.updateSuccess
         )
       );
   } catch (error: any) {
-    console.error(constants.comment.addOrUpdateFailure);
+    console.error(constants.comment.upsertFailure);
     console.error(error);
     return response
       .status(constants.statusCode.serverError)

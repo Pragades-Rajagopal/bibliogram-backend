@@ -1,6 +1,6 @@
-import { and, count, eq, ilike, or, sql } from "drizzle-orm";
+import { and, eq, ilike, or, sql } from "drizzle-orm";
 import { db } from "../drizzle/db";
-import { Book, Note, NoteView } from "../drizzle/schema";
+import { Book, NoteView } from "../drizzle/schema";
 import constants from "../config/constants";
 
 /**
@@ -20,10 +20,10 @@ export const searchModel = async (value: string): Promise<any> => {
         field3: sql<string>`''`,
         field4: Book.author,
         field5: sql<string>`(
-            SELECT COUNT(1)
-            FROM note n
-            WHERE n.book_id = ${Book.id}
-          )`.as("field5"),
+          SELECT COUNT(1)
+          FROM note
+          WHERE book_id = book.id
+        )::text`,
       })
       .from(Book)
       .where(

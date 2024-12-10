@@ -25,14 +25,27 @@ export const upsertNote = async (
 ): Promise<any> => {
   try {
     const body: INote = request.body;
-    await upsertNoteModel(body);
+    const result: { id: string }[] = await upsertNoteModel(body);
+    if (!result[0]?.id) {
+      return response
+        .status(constants.statusCode.error)
+        .json(
+          responseObject(
+            constants.statusCode.error,
+            constants.note.upsertBadRequest
+          )
+        );
+    }
     return response
       .status(constants.statusCode.success)
       .json(
-        responseObject(constants.statusCode.success, constants.note.addSuccess)
+        responseObject(
+          constants.statusCode.success,
+          constants.note.upsertSuccess
+        )
       );
   } catch (error: any) {
-    console.error(constants.note.addOrUpdateFailure);
+    console.error(constants.note.upsertFailure);
     console.error(error);
     return response
       .status(constants.statusCode.serverError)

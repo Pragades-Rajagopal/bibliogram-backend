@@ -122,19 +122,32 @@ export const deactivateUserModel = async (userId: string): Promise<any> => {
       })
       .from(User)
       .where(and(eq(User.id, userId), eq(User.status, "active")));
-    // TODO: fix usage days logic
-    await db.insert(DeactivatedUser).values({
-      userId: userInfo[0].id,
-      fullname: userInfo[0].fullname,
-      username: userInfo[0].username,
-      usageDays: sql`CAST(EXTRACT(JULIAN FROM now()) - EXTRACT(JULIAN FROM ${userInfo[0].createdOn.toISOString()}) AS INTEGER)`,
-    });
-    await db.delete(User).where(eq(User.id, userId));
+    await db
+      .transaction(async (tx) => {
+        await tx.insert(DeactivatedUser).values({
+          userId: userInfo[0].id,
+          fullname: userInfo[0].fullname,
+          username: userInfo[0].username,
+          usageDays: getUsageDays(userInfo[0].createdOn),
+        });
+        await tx.delete(User).where(eq(User.id, userId));
+      })
+      .catch((error: any) => {
+        console.error(error);
+        throw new Error(
+          `${constants.commonServerError.internal} - ${constants.debugErrorCodes.userComponent.deactivate}`
+        );
+      });
   } catch (error: any) {
     console.error(error);
-
     throw new Error(
       `${constants.commonServerError.internal} - ${constants.debugErrorCodes.userComponent.deactivate}`
     );
   }
+};
+
+const getUsageDays = (date: Date): number => {
+  return Math.round(
+    (new Date().getTime() - date.getTime()) / (1000 * 24 * 60 * 60)
+  );
 };

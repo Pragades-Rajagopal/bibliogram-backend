@@ -11,7 +11,7 @@ import constants from "../config/constants";
  */
 export const upsertCommentModel = async (data: IComment): Promise<any> => {
   try {
-    await db
+    return await db
       .insert(Comment)
       .values({
         id: data.id,
@@ -24,10 +24,13 @@ export const upsertCommentModel = async (data: IComment): Promise<any> => {
         set: {
           comment: data.comment,
         },
-        targetWhere: and(
+        setWhere: and(
           eq(Comment.userId, data.userId),
           eq(Comment.noteId, data.noteId)
         ),
+      })
+      .returning({
+        id: Comment.id,
       });
   } catch (error: any) {
     if (error?.code === "23503")

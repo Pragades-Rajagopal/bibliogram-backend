@@ -11,7 +11,7 @@ import { INote, IBookmarkNote } from "../interfaces/book";
  */
 export const upsertNoteModel = async (data: INote): Promise<any> => {
   try {
-    await db
+    return await db
       .insert(Note)
       .values({
         id: data.id,
@@ -27,10 +27,13 @@ export const upsertNoteModel = async (data: INote): Promise<any> => {
           isPrivate: data.isPrivate,
           modifiedOn: sql`now()`,
         },
-        targetWhere: and(
+        setWhere: and(
           eq(Note.userId, data.userId),
           eq(Note.bookId, data.bookId)
         ),
+      })
+      .returning({
+        id: Note.id,
       });
   } catch (error: any) {
     if (error?.code === "23503")
