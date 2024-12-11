@@ -29,17 +29,22 @@ export const bulkAddBooks = async (
       .json(
         responseObject(constants.statusCode.success, constants.books.addSuccess)
       );
-  } catch (error) {
+  } catch (error: any) {
     console.error(constants.books.addFailure);
     console.error(error);
+    if (error?.message === "401") {
+      return response
+        .status(constants.statusCode.unauthorized)
+        .json(
+          responseObject(
+            constants.statusCode.unauthorized,
+            constants.authenticationMessage.unauthorized
+          )
+        );
+    }
     return response
       .status(constants.statusCode.serverError)
-      .json(
-        responseObject(
-          constants.statusCode.serverError,
-          constants.books.addFailure
-        )
-      );
+      .json(responseObject(constants.statusCode.serverError, error?.message));
   }
 };
 

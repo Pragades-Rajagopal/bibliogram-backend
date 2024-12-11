@@ -206,14 +206,15 @@ export const deleteNote = async (
 ): Promise<any> => {
   try {
     const { id } = request.params;
-    const result: { id: string }[] = await deleteNoteModel(id);
+    const userId: string = request?.userId;
+    const result: { id: string }[] = await deleteNoteModel(id, userId);
     if (!result[0]?.id) {
       return response
         .status(constants.statusCode.error)
         .json(
           responseObject(
             constants.statusCode.error,
-            constants.assetValidation.noteNotExists
+            `${constants.assetValidation.noteNotExists} or ${constants.authenticationMessage.unauthorized}`
           )
         );
     }

@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS "user_table" (
 	"private_key" varchar,
 	"status" "user_status" DEFAULT 'active' NOT NULL,
 	"role" "user_role" DEFAULT 'user' NOT NULL,
+	"isPremiumUser" boolean DEFAULT false NOT NULL,
 	"created_on" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -163,7 +164,19 @@ CREATE VIEW "public"."note_vw" AS (
 );--> statement-breakpoint
 CREATE VIEW "public"."bookmark_vw" AS (
   select
-    nv.*
+    b.note_id ,
+    b.user_id as "bookmark_user_id",
+    nv.user_id as "note_user_id",
+    nv.book_id,
+    nv.note,
+    nv.is_private,
+    nv.created_on,
+    nv.modified_on,
+    nv."user",
+    nv.book_name,
+    nv.author,
+    nv.comments,
+    nv.short_date
   from
     note_vw nv,
     bookmark b

@@ -1,4 +1,4 @@
-import { body, check, param, validationResult } from "express-validator";
+import { body, param, validationResult } from "express-validator";
 import { NextFunction, Request, Response } from "express";
 import constants from "../config/constants";
 import { responseObject } from "../utils/response";
@@ -11,6 +11,22 @@ export const addBooksValidation = [
     .not()
     .isEmpty()
     .withMessage("author is mandatory"),
+  body("data.*.summary")
+    .optional()
+    .isString()
+    .withMessage("summary should be a string"),
+  body("data.*.rating")
+    .optional()
+    .isDecimal()
+    .withMessage("summary should be a decimal"),
+  body("data.*.pages")
+    .optional()
+    .isInt()
+    .withMessage("pages should be a integer"),
+  body("data.*.publishedOn")
+    .optional()
+    .isDate({ format: "DD-MM-YYYY" })
+    .withMessage("publishedOn should be a date with format DD-MM-YYYY"),
   (request: Request, response: Response, next: NextFunction): any => {
     const validationError = validationResult(request);
     if (!validationError.isEmpty()) {

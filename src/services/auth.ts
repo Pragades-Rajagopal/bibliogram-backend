@@ -17,6 +17,13 @@ export const generateToken = (payload: object): string => {
   return accessToken;
 };
 
+/**
+ * Authenticates user token
+ * @param {Request} req
+ * @param {Response} res
+ * @param {NextFunction} next
+ * @returns {any}
+ */
 export const authenticateToken = (
   req: Request,
   res: Response,

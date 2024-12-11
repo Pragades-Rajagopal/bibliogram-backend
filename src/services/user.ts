@@ -15,6 +15,7 @@ export const saveUserModel = async (data: SaveUserRequest): Promise<any> => {
       fullname: data.fullname,
       username: data.username,
       privateKey: data.privateKey,
+      role: data.role ?? "user",
     });
   } catch (error: any) {
     console.error(`saveUserModel error > ${error}`);
@@ -146,6 +147,11 @@ export const deactivateUserModel = async (userId: string): Promise<any> => {
   }
 };
 
+/**
+ * Gets the number of days the user has user the service before deactivating
+ * @param {Date} date
+ * @returns {number}
+ */
 const getUsageDays = (date: Date): number => {
   return Math.round(
     (new Date().getTime() - date.getTime()) / (1000 * 24 * 60 * 60)

@@ -2,8 +2,8 @@ export interface SaveUserRequest {
   fullname: string;
   username: string;
   privateKey: string;
-  status: number;
-  createdOn: string;
+  role?: "user" | "admin";
+  createdOn?: string;
 }
 
 export interface GeneratePrivateKey {

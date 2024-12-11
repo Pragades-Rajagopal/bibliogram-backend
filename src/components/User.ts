@@ -127,7 +127,7 @@ export const userLogout = async (
   response: Response
 ): Promise<any> => {
   try {
-    const userId = request.body.userId;
+    const { userId } = request.params;
     const result: { userId: string }[] = await updateUserLogout(userId);
     if (!result[0]?.userId) {
       return response
@@ -163,11 +163,11 @@ export const userLogout = async (
  * @returns {Promise<any>}
  */
 export const deactivateUser = async (
-  request: Request | any,
+  request: Request,
   response: Response
 ): Promise<any> => {
   try {
-    const { userId } = request.body;
+    const { userId } = request.params;
     // asset validation
     const _isUserExists: [] = await getUserInfoModel("", userId);
     if (_isUserExists.length === 0) {

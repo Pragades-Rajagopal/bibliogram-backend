@@ -1,5 +1,5 @@
 {
-  "id": "2f655886-e6f6-4f61-beb4-72250642313f",
+  "id": "42e79950-f60d-49c2-8af2-9f7ddebf89fd",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -508,6 +508,13 @@
           "notNull": true,
           "default": "'user'"
         },
+        "isPremiumUser": {
+          "name": "isPremiumUser",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
         "created_on": {
           "name": "created_on",
           "type": "timestamp",
@@ -625,14 +632,20 @@
   "views": {
     "public.bookmark_vw": {
       "columns": {
-        "id": {
-          "name": "id",
+        "note_id": {
+          "name": "note_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "user_id": {
-          "name": "user_id",
+        "bookmark_user_id": {
+          "name": "bookmark_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "note_user_id": {
+          "name": "note_user_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -698,7 +711,7 @@
           "notNull": false
         }
       },
-      "definition": "\n  select\n    nv.*\n  from\n    note_vw nv,\n    bookmark b\n  where\n    nv.id = b.note_id\n",
+      "definition": "\n  select\n    b.note_id ,\n    b.user_id as \"bookmark_user_id\",\n    nv.user_id as \"note_user_id\",\n    nv.book_id,\n    nv.note,\n    nv.is_private,\n    nv.created_on,\n    nv.modified_on,\n    nv.\"user\",\n    nv.book_name,\n    nv.author,\n    nv.comments,\n    nv.short_date\n  from\n    note_vw nv,\n    bookmark b\n  where\n    nv.id = b.note_id\n",
       "name": "bookmark_vw",
       "schema": "public",
       "isExisting": false,

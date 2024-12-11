@@ -23,14 +23,14 @@ router.post(
   UserComponent.registerUser
 );
 router.post("/login", userValidators.loginValidation, UserComponent.userLogin);
-router.post(
-  "/logout",
+router.get(
+  "/logout/:userId",
   authenticateToken,
   userValidators.logoutValidation,
   UserComponent.userLogout
 );
-router.post(
-  "/deactivate-user",
+router.get(
+  "/deactivate-user/:userId",
   authenticateToken,
   userValidators.deactivateUserValidation,
   UserComponent.deactivateUser

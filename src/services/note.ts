@@ -136,13 +136,20 @@ export const updateNoteVisibilityModel = async (
 /**
  * Deletes a note
  * @param {string} id
+ * @param {string} userId
  * @returns {Promise}
  */
-export const deleteNoteModel = async (id: string): Promise<any> => {
+export const deleteNoteModel = async (
+  id: string,
+  userId: string
+): Promise<any> => {
   try {
-    return await db.delete(Note).where(eq(Note.id, id)).returning({
-      id: Note.id,
-    });
+    return await db
+      .delete(Note)
+      .where(and(eq(Note.id, id), eq(Note.userId, userId)))
+      .returning({
+        id: Note.id,
+      });
   } catch (error) {
     console.error(error);
     throw new Error(
@@ -187,7 +194,7 @@ export const getBookmarksModel = async (userId: string): Promise<any> => {
     return await db
       .select()
       .from(BookmarkView)
-      .where(eq(BookmarkView.userId, userId));
+      .where(eq(BookmarkView.bookmarkUserId, userId));
   } catch (error) {
     console.error(error);
     throw new Error(

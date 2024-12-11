@@ -1,7 +1,7 @@
 import { desc, eq, ilike, or, asc, count, sql, inArray } from "drizzle-orm";
 import constants from "../config/constants";
 import { db } from "../drizzle/db";
-import { Book, Note } from "../drizzle/schema";
+import { Book, Note, User } from "../drizzle/schema";
 import { IBook } from "../interfaces/book";
 
 /**
@@ -14,6 +14,13 @@ export const bulkInsertBookModel = async (
   userId: string
 ): Promise<any> => {
   try {
+    const userInfo: { role: "admin" | "user" }[] = await db
+      .select({ role: User.role })
+      .from(User)
+      .where(eq(User.id, userId));
+    if (userInfo[0]?.role !== "admin") {
+      throw new Error("401");
+    }
     let bulkValues: any[] = [];
     for (const book of books) {
       bulkValues.push({
@@ -27,8 +34,11 @@ export const bulkInsertBookModel = async (
       });
     }
     await db.insert(Book).values(bulkValues);
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
+    if (error?.message === "401") {
+      throw new Error(error?.message);
+    }
     throw new Error(
       `${constants.commonServerError.internal} - ${constants.debugErrorCodes.bookComponent.bulkAdd}`
     );

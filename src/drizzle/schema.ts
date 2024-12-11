@@ -27,6 +27,7 @@ export const User = pgTable(
     privateKey: varchar("private_key"),
     status: UserStatus("status").notNull().default("active"),
     role: UserRole("role").notNull().default("user"),
+    isPremiumUser: boolean("isPremiumUser").notNull().default(false),
     createdOn: timestamp("created_on").notNull().defaultNow(),
   },
   (table) => [uniqueIndex("username_index").on(table.username)]
@@ -219,8 +220,9 @@ export const NoteView = pgView("note_vw", {
 `);
 
 export const BookmarkView = pgView("bookmark_vw", {
-  id: text("id"),
-  userId: text("user_id"),
+  noteId: text("note_id"),
+  bookmarkUserId: text("bookmark_user_id"),
+  noteUserId: text("note_user_id"),
   bookId: text("book_id"),
   note: text("note"),
   isPrivate: boolean("is_private"),
@@ -233,7 +235,19 @@ export const BookmarkView = pgView("bookmark_vw", {
   shortDate: text("short_date"),
 }).as(sql<string>`
   select
-    nv.*
+    b.note_id ,
+    b.user_id as "bookmark_user_id",
+    nv.user_id as "note_user_id",
+    nv.book_id,
+    nv.note,
+    nv.is_private,
+    nv.created_on,
+    nv.modified_on,
+    nv."user",
+    nv.book_name,
+    nv.author,
+    nv.comments,
+    nv.short_date
   from
     note_vw nv,
     bookmark b

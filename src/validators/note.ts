@@ -68,11 +68,12 @@ export const updateVisibilityValidation = [
     .withMessage("id is mandatory and should be an UUID"),
   param("flag").custom((value) => {
     if (
-      value !== constants.note.privateFlag ||
+      value !== constants.note.privateFlag &&
       value !== constants.note.publicFlag
     ) {
-      return "flag can only take 'private' or 'public'";
+      throw new Error("flag can only take 'private' or 'public'");
     }
+    return true;
   }),
   body("noteId").optional().isUUID(),
   (request: Request, response: Response, next: NextFunction): any => {

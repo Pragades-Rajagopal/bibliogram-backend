@@ -94,13 +94,17 @@ export const getCommentModel = async (
 /**
  * Deletes a comment
  * @param {string} id
- * @returns {Promise}
+ * @param {string} userId
+ * @returns {Promise<any>}
  */
-export const deleteCommentModel = async (id: string): Promise<any> => {
+export const deleteCommentModel = async (
+  id: string,
+  userId: string
+): Promise<any> => {
   try {
     return await db
       .delete(Comment)
-      .where(eq(Comment.id, id))
+      .where(and(eq(Comment.id, id), eq(Comment.userId, userId)))
       .returning({ id: Comment.id });
   } catch (error: any) {
     console.error(error);

@@ -1,4 +1,4 @@
-import { body, validationResult } from "express-validator";
+import { body, param, validationResult } from "express-validator";
 import { Request, Response, NextFunction } from "express";
 import constants from "../config/constants";
 import { responseObject } from "../utils/response";
@@ -14,6 +14,14 @@ export const registerValidation = [
     .not()
     .isEmpty()
     .withMessage("username is mandatory"),
+  body("role")
+    .optional()
+    .custom((value) => {
+      if (value !== "admin" && value !== "user") {
+        throw new Error("role can only take 'admin' or 'user'");
+      }
+      return true;
+    }),
   (request: Request, response: Response, next: NextFunction): any => {
     const validationError = validationResult(request);
     if (!validationError.isEmpty()) {
@@ -54,7 +62,7 @@ export const loginValidation = [
 ];
 
 export const deactivateUserValidation = [
-  body("userId")
+  param("userId")
     .exists()
     .not()
     .isEmpty()
@@ -75,7 +83,7 @@ export const deactivateUserValidation = [
 ];
 
 export const logoutValidation = [
-  body("userId")
+  param("userId")
     .exists()
     .not()
     .isEmpty()
