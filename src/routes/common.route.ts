@@ -6,6 +6,7 @@ import * as BookComponent from "../components/Book";
 import * as NoteComponent from "../components/Note";
 import * as CommentComponent from "../components/Comment";
 import * as SearchComponent from "../components/Search";
+import * as AppStatsComponent from "../components/AppStats";
 //Validators
 import * as userValidators from "../validators/user";
 import * as bookValidators from "../validators/book";
@@ -159,5 +160,10 @@ router.get(
   searchValidators.searchValidation,
   SearchComponent.globalSearch
 );
+
+/**
+ * Search route
+ */
+router.get("/app-stats", authenticateToken, AppStatsComponent.getAppStats);
 
 export default router;

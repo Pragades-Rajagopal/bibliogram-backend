@@ -3,6 +3,7 @@ import constants from "../config/constants";
 import { db } from "../drizzle/db";
 import { Bookmark, BookmarkView, Note, NoteView } from "../drizzle/schema";
 import { INote, IBookmarkNote } from "../interfaces/book";
+import { updateStats } from "./appStats";
 
 /**
  * Add/update note
@@ -11,7 +12,9 @@ import { INote, IBookmarkNote } from "../interfaces/book";
  */
 export const upsertNoteModel = async (data: INote): Promise<any> => {
   try {
-    return await db
+    const result: {
+      id: string;
+    }[] = await db
       .insert(Note)
       .values({
         id: data.id,
@@ -35,6 +38,10 @@ export const upsertNoteModel = async (data: INote): Promise<any> => {
       .returning({
         id: Note.id,
       });
+    if (result[0]?.id) {
+      await updateStats("note", 1);
+    }
+    return result;
   } catch (error: any) {
     if (error?.code === "23503")
       throw new Error(

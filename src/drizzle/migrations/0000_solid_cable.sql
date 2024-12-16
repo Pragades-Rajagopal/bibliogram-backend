@@ -1,5 +1,11 @@
 CREATE TYPE "public"."user_role" AS ENUM('user', 'admin');--> statement-breakpoint
 CREATE TYPE "public"."user_status" AS ENUM('active', 'inactive');--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "app_stats" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"grams_psted" integer,
+	"books_seeded" integer
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "book" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" varchar(500) NOT NULL,

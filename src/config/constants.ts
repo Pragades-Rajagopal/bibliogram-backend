@@ -44,6 +44,10 @@ export default {
       get: "EC001",
       delete: "EC002",
     },
+    appStats: {
+      upsert: "EA000",
+      get: "EA001",
+    },
   },
   user: {
     registered: "User registered successfully",
@@ -131,5 +135,10 @@ export default {
     bookNotExists: "Book not found to perform this operation",
     commentNotExists: "Comment not found to perform this operation",
     userNotExists: "User not found to perform this operation",
+  },
+  appStats: {
+    found: "App stats found",
+    notFound: "App stats not found",
+    getError: "Error while getting app stats",
   },
 };

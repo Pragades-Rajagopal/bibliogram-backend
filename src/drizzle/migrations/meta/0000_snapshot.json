@@ -1,9 +1,41 @@
 {
-  "id": "42e79950-f60d-49c2-8af2-9f7ddebf89fd",
+  "id": "4c3f1904-c6c7-42dd-802e-ed7b6d95ae30",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.app_stats": {
+      "name": "app_stats",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "grams_psted": {
+          "name": "grams_psted",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "books_seeded": {
+          "name": "books_seeded",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.book": {
       "name": "book",
       "schema": "",

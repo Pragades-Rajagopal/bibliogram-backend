@@ -64,8 +64,6 @@ export const getAllBooks = async (
   try {
     const { value, limit, offset } = request.query;
     const input = value?.toString();
-    console.log(input);
-
     const result: [] = await getAllBooksModel(
       input!,
       limit as string,

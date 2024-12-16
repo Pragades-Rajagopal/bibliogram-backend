@@ -3,6 +3,8 @@ import constants from "../config/constants";
 import { db } from "../drizzle/db";
 import { Book, Note, User } from "../drizzle/schema";
 import { IBook } from "../interfaces/book";
+import { RowList } from "postgres";
+import { updateStats } from "./appStats";
 
 /**
  * Adds book data with bulk load
@@ -33,7 +35,15 @@ export const bulkInsertBookModel = async (
         createdBy: userId,
       });
     }
-    await db.insert(Book).values(bulkValues);
+    const result: { id: string }[] = await db
+      .insert(Book)
+      .values(bulkValues)
+      .returning({
+        id: Book.id,
+      });
+    if (result.length) {
+      await updateStats("book", result.length);
+    }
   } catch (error: any) {
     console.error(error);
     if (error?.message === "401") {

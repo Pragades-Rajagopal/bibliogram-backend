@@ -30,7 +30,7 @@ export const generatePrivateKey = async (): Promise<GeneratePrivateKey> => {
 
 /**
  * Verify the private key upon user login
- * @param {string} username
+ * @param {string} privateKey
  * @param {string} privateKey
  * @returns {Promise} boolean | number
  */

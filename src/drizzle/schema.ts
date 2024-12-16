@@ -128,6 +128,12 @@ export const Bookmark = pgTable(
   ]
 );
 
+export const AppStats = pgTable("app_stats", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  gramsPosted: integer("grams_psted"),
+  booksSeeded: integer("books_seeded"),
+});
+
 /**
  * Relations
  */
