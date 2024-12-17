@@ -1,38 +1,38 @@
 import { Request, Response } from "express";
 import constants from "../config/constants";
-import { IBookmarkNote, INote } from "../interfaces/book";
+import { IBookmarkGram, IGram } from "../interfaces/book";
 import {
   deleteBookmarkModel,
-  deleteNoteModel,
+  deleteGramModel,
   getBookmarksModel,
-  getNoteModel,
-  isNoteBookmarkedModel,
+  getGramModel,
+  isGramBookmarkedModel,
   saveBookmarkModel,
-  updateNoteVisibilityModel,
-  upsertNoteModel,
-} from "../services/note";
+  updateGramVisibilityModel,
+  upsertGramModel,
+} from "../services/gram";
 import { responseObject } from "../utils/response";
 
 /**
- * Adds or updates note
+ * Adds or updates gram
  * @param {Request} request
  * @param {Response} response
  * @returns {Promise<Response>}
  */
-export const upsertNote = async (
+export const upsertGram = async (
   request: Request,
   response: Response
 ): Promise<any> => {
   try {
-    const body: INote = request.body;
-    const result: { id: string }[] = await upsertNoteModel(body);
+    const body: IGram = request.body;
+    const result: { id: string }[] = await upsertGramModel(body);
     if (!result[0]?.id) {
       return response
         .status(constants.statusCode.error)
         .json(
           responseObject(
             constants.statusCode.error,
-            constants.note.upsertBadRequest
+            constants.gram.upsertBadRequest
           )
         );
     }
@@ -41,11 +41,11 @@ export const upsertNote = async (
       .json(
         responseObject(
           constants.statusCode.success,
-          constants.note.upsertSuccess
+          constants.gram.upsertSuccess
         )
       );
   } catch (error: any) {
-    console.error(constants.note.upsertFailure);
+    console.error(constants.gram.upsertFailure);
     console.error(error);
     return response
       .status(constants.statusCode.serverError)
@@ -54,50 +54,50 @@ export const upsertNote = async (
 };
 
 /**
- * Gets a book note based on note id
+ * Gets a book gram based on gram id
  * @param {Request} request
  * @param {Response} response
  * @returns {Promise<Response>}
  */
-export const getNoteById = async (
+export const getGramById = async (
   request: Request,
   response: Response
 ): Promise<any> => {
   try {
     const id = request.params.id;
-    const data: [] = await getNoteModel(id);
+    const data: [] = await getGramModel(id);
     if (data && data.length === 0) {
       return response
         .status(constants.statusCode.notFound)
         .json(
           responseObject(
             constants.statusCode.notFound,
-            constants.note.notFound,
+            constants.gram.notFound,
             { data: [] }
           )
         );
     }
     return response.status(constants.statusCode.success).json(
-      responseObject(constants.statusCode.success, constants.note.found, {
+      responseObject(constants.statusCode.success, constants.gram.found, {
         data: data,
       })
     );
   } catch (error) {
-    console.error(constants.note.getError);
+    console.error(constants.gram.getError);
     console.error(error);
     return response
       .status(constants.statusCode.serverError)
       .json(
         responseObject(
           constants.statusCode.serverError,
-          constants.note.getError
+          constants.gram.getError
         )
       );
   }
 };
 
 /**
- * Gets book notes with query
+ * Gets book grams with query
  *
  * * Filter with `book id` or `user id` or both
  * * Paginate with `limit` and `offset`
@@ -105,13 +105,13 @@ export const getNoteById = async (
  * @param {Response} response
  * @returns {Promise<Response>}
  */
-export const getNotesByQuery = async (
+export const getGramsByQuery = async (
   request: Request,
   response: Response
 ): Promise<any> => {
   try {
     const { bookId, userId, limit, offset } = request.query;
-    const data: [] = await getNoteModel(
+    const data: [] = await getGramModel(
       undefined,
       bookId as string,
       userId as string,
@@ -124,52 +124,52 @@ export const getNotesByQuery = async (
         .json(
           responseObject(
             constants.statusCode.notFound,
-            constants.note.notFound,
+            constants.gram.notFound,
             { count: 0, data: [] }
           )
         );
     }
     return response.status(constants.statusCode.success).json(
-      responseObject(constants.statusCode.success, constants.note.found, {
+      responseObject(constants.statusCode.success, constants.gram.found, {
         count: data.length,
         data: data,
       })
     );
   } catch (error) {
-    console.error(constants.note.getError);
+    console.error(constants.gram.getError);
     console.error(error);
     return response
       .status(constants.statusCode.serverError)
       .json(
         responseObject(
           constants.statusCode.serverError,
-          constants.note.getError
+          constants.gram.getError
         )
       );
   }
 };
 
-export const updateNoteVisibility = async (
+export const updateGramVisibility = async (
   request: Request,
   response: Response
 ): Promise<any> => {
   try {
     const { id, flag } = request.params;
     if (
-      flag !== constants.note.publicFlag &&
-      flag !== constants.note.privateFlag
+      flag !== constants.gram.publicFlag &&
+      flag !== constants.gram.privateFlag
     ) {
       return response
         .status(constants.statusCode.error)
         .json(
-          responseObject(constants.statusCode.error, constants.note.badRequest)
+          responseObject(constants.statusCode.error, constants.gram.badRequest)
         );
     }
-    const result: [{ id: string }] = await updateNoteVisibilityModel(id, flag);
+    const result: [{ id: string }] = await updateGramVisibilityModel(id, flag);
     if (!result[0]?.id) {
       return response.status(constants.statusCode.error).json({
         statusCode: constants.statusCode.error,
-        message: constants.assetValidation.noteNotExists,
+        message: constants.assetValidation.gramNotExists,
       });
     }
     return response
@@ -177,44 +177,44 @@ export const updateNoteVisibility = async (
       .json(
         responseObject(
           constants.statusCode.success,
-          constants.note.updateFlagSuccess
+          constants.gram.updateFlagSuccess
         )
       );
   } catch (error) {
-    console.error(constants.note.updateFlagFailure);
+    console.error(constants.gram.updateFlagFailure);
     console.error(error);
     return response
       .status(constants.statusCode.serverError)
       .json(
         responseObject(
           constants.statusCode.serverError,
-          constants.note.updateFlagFailure
+          constants.gram.updateFlagFailure
         )
       );
   }
 };
 
 /**
- * Deletes note
+ * Deletes gram
  * @param {Request} request
  * @param {Response} response
  * @returns {Promise<any>}
  */
-export const deleteNote = async (
+export const deleteGram = async (
   request: Request,
   response: Response
 ): Promise<any> => {
   try {
     const { id } = request.params;
     const userId: string = request?.userId;
-    const result: { id: string }[] = await deleteNoteModel(id, userId);
+    const result: { id: string }[] = await deleteGramModel(id, userId);
     if (!result[0]?.id) {
       return response
         .status(constants.statusCode.error)
         .json(
           responseObject(
             constants.statusCode.error,
-            `${constants.assetValidation.noteNotExists} or ${constants.authenticationMessage.unauthorized}`
+            `${constants.assetValidation.gramNotExists} or ${constants.authenticationMessage.unauthorized}`
           )
         );
     }
@@ -223,18 +223,18 @@ export const deleteNote = async (
       .json(
         responseObject(
           constants.statusCode.success,
-          constants.note.deleteSuccess
+          constants.gram.deleteSuccess
         )
       );
   } catch (error) {
-    console.error(constants.note.deleteFailure);
+    console.error(constants.gram.deleteFailure);
     console.error(error);
     return response
       .status(constants.statusCode.serverError)
       .json(
         responseObject(
           constants.statusCode.serverError,
-          constants.note.deleteFailure
+          constants.gram.deleteFailure
         )
       );
   }
@@ -246,12 +246,12 @@ export const deleteNote = async (
  * @param {Response} response
  * @returns {Promise<any>}
  */
-export const bookmarkNote = async (
+export const bookmarkGram = async (
   request: Request,
   response: Response
 ): Promise<any> => {
   try {
-    const body: IBookmarkNote = request.body;
+    const body: IBookmarkGram = request.body;
     const result: { id: string }[] = await saveBookmarkModel(body);
     if (!result[0]?.id) {
       return response
@@ -259,7 +259,7 @@ export const bookmarkNote = async (
         .json(
           responseObject(
             constants.statusCode.error,
-            `${constants.assetValidation.userNotExists} or ${constants.assetValidation.noteNotExists}`
+            `${constants.assetValidation.userNotExists} or ${constants.assetValidation.gramNotExists}`
           )
         );
     }
@@ -327,7 +327,7 @@ export const getBookmarks = async (
 };
 
 /**
- * Deletes note bookmark
+ * Deletes gram bookmark
  * @param {Request} request
  * @param {Response} response
  * @returns {Promise<any>}
@@ -337,18 +337,18 @@ export const deleteBookmark = async (
   response: Response
 ): Promise<any> => {
   try {
-    const { noteId, userId } = request.params;
-    const result: { noteId: string }[] = await deleteBookmarkModel(
-      noteId,
+    const { gramId, userId } = request.params;
+    const result: { gramId: string }[] = await deleteBookmarkModel(
+      gramId,
       userId
     );
-    if (!result[0]?.noteId) {
+    if (!result[0]?.gramId) {
       return response
         .status(constants.statusCode.notFound)
         .json(
           responseObject(
             constants.statusCode.notFound,
-            `${constants.assetValidation.userNotExists} or ${constants.assetValidation.noteNotExists}`
+            `${constants.assetValidation.userNotExists} or ${constants.assetValidation.gramNotExists}`
           )
         );
     }
@@ -385,8 +385,8 @@ export const isBookmarked = async (
   response: Response
 ): Promise<any> => {
   try {
-    const { noteId, userId } = request.params;
-    const data: [] = await isNoteBookmarkedModel(noteId, userId);
+    const { gramId, userId } = request.params;
+    const data: [] = await isGramBookmarkedModel(gramId, userId);
     if (data && data.length === 0) {
       return response
         .status(constants.statusCode.notFound)

@@ -73,8 +73,8 @@ export const Book = pgTable(
   ]
 );
 
-export const Note = pgTable(
-  "note",
+export const Gram = pgTable(
+  "gram",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     userId: uuid("user_id")
@@ -83,14 +83,14 @@ export const Note = pgTable(
     bookId: uuid("book_id")
       .references(() => Book.id, { onDelete: "cascade" })
       .notNull(),
-    note: varchar("note").notNull(),
+    gram: varchar("gram").notNull(),
     isPrivate: boolean("is_private").notNull().default(true),
     createdOn: timestamp("created_on").notNull().defaultNow(),
     modifiedOn: timestamp("modified_on").notNull().defaultNow(),
   },
   (table) => [
-    index("note_user_index").on(table.userId),
-    index("note_book_index").on(table.bookId),
+    index("gram_user_index").on(table.userId),
+    index("gram_book_index").on(table.bookId),
   ]
 );
 
@@ -101,15 +101,15 @@ export const Comment = pgTable(
     userId: uuid("user_id")
       .references(() => User.id, { onDelete: "cascade" })
       .notNull(),
-    noteId: uuid("note_id")
-      .references(() => Note.id, { onDelete: "cascade" })
+    gramId: uuid("gram_id")
+      .references(() => Gram.id, { onDelete: "cascade" })
       .notNull(),
     comment: varchar("comment").notNull(),
     createdOn: timestamp("created_on").notNull().defaultNow(),
   },
   (table) => [
     index("comment_user_index").on(table.userId),
-    index("comment_note_index").on(table.noteId),
+    index("comment_gram_index").on(table.gramId),
   ]
 );
 
@@ -119,19 +119,29 @@ export const Bookmark = pgTable(
     userId: uuid("user_id")
       .references(() => User.id, { onDelete: "cascade" })
       .notNull(),
-    noteId: uuid("note_id")
-      .references(() => Note.id, { onDelete: "cascade" })
+    gramId: uuid("gram_id")
+      .references(() => Gram.id, { onDelete: "cascade" })
       .notNull(),
   },
   (table) => [
-    uniqueIndex("bookmark_composite_index").on(table.userId, table.noteId),
+    uniqueIndex("bookmark_composite_index").on(table.userId, table.gramId),
   ]
 );
 
 export const AppStats = pgTable("app_stats", {
   id: uuid("id").primaryKey().defaultRandom(),
-  gramsPosted: integer("grams_psted"),
+  gramsPosted: integer("grams_posted"),
   booksSeeded: integer("books_seeded"),
+});
+
+export const UserStats = pgTable("user_stats", {
+  userId: uuid("user_id")
+    .references(() => User.id, { onDelete: "cascade" })
+    .primaryKey()
+    .notNull(),
+  gramsCount: integer("grams_count"),
+  wishlist: integer("wishlist"),
+  completedBooks: integer("completed_books"),
 });
 
 /**
@@ -150,7 +160,7 @@ export const BookRelations = relations(Book, ({ many }) => {
   };
 });
 
-export const NoteRelations = relations(Note, ({ many }) => {
+export const GramRelations = relations(Gram, ({ many }) => {
   return {
     user: many(User),
     book: many(Book),
@@ -160,7 +170,7 @@ export const NoteRelations = relations(Note, ({ many }) => {
 export const CommentRelations = relations(Comment, ({ many }) => {
   return {
     user: many(User),
-    note: many(Note),
+    gram: many(Gram),
   };
 });
 
@@ -170,9 +180,18 @@ export const BookmarkRelations = relations(Bookmark, ({ one }) => {
       fields: [Bookmark.userId],
       references: [User.id],
     }),
-    note: one(Note, {
-      fields: [Bookmark.noteId],
-      references: [Note.id],
+    gram: one(Gram, {
+      fields: [Bookmark.gramId],
+      references: [Gram.id],
+    }),
+  };
+});
+
+export const UserStatRelations = relations(UserStats, ({ one }) => {
+  return {
+    user: one(User, {
+      fields: [UserStats.userId],
+      references: [User.id],
     }),
   };
 });
@@ -181,11 +200,11 @@ export const BookmarkRelations = relations(Bookmark, ({ one }) => {
  * Views
  */
 
-export const NoteView = pgView("note_vw", {
+export const GramView = pgView("gram_vw", {
   id: text("id"),
   userId: text("user_id"),
   bookId: text("book_id"),
-  note: text("note"),
+  gram: text("gram"),
   isPrivate: boolean("is_private"),
   createdOn: timestamp("created_on"),
   modifiedOn: timestamp("modified_on"),
@@ -196,13 +215,13 @@ export const NoteView = pgView("note_vw", {
   shortDate: text("short_date"),
 }).as(sql<string>`
   select
-    n.id,
-    n.user_id,
-    n.book_id,
-    n.note,
-    n.is_private,
-    n.created_on,
-    n.modified_on,
+    g.id,
+    g.user_id,
+    g.book_id,
+    g.gram,
+    g.is_private,
+    g.created_on,
+    g.modified_on,
     u.fullname as user,
     b.name as book_name,
     b.author,
@@ -212,25 +231,25 @@ export const NoteView = pgView("note_vw", {
     from
       comment c
     where
-      c.note_id = n.id
+      c.gram_id = g.id
         ) as comments,
-    TO_CHAR(n.modified_on,
-    'DD') || ' ' || TO_CHAR(n.modified_on,
+    TO_CHAR(g.modified_on,
+    'DD') || ' ' || TO_CHAR(g.modified_on,
     'Mon') as short_date
   from
-    note n
+    gram g
   join user_table u on
-    n.user_id = u.id
+    g.user_id = u.id
   join book b on
-    n.book_id = b.id  
+    g.book_id = b.id  
 `);
 
 export const BookmarkView = pgView("bookmark_vw", {
-  noteId: text("note_id"),
+  gramId: text("gram_id"),
   bookmarkUserId: text("bookmark_user_id"),
-  noteUserId: text("note_user_id"),
+  gramUserId: text("gram_user_id"),
   bookId: text("book_id"),
-  note: text("note"),
+  gram: text("gram"),
   isPrivate: boolean("is_private"),
   createdOn: timestamp("created_on"),
   modifiedOn: timestamp("modified_on"),
@@ -241,30 +260,30 @@ export const BookmarkView = pgView("bookmark_vw", {
   shortDate: text("short_date"),
 }).as(sql<string>`
   select
-    b.note_id ,
+    b.gram_id ,
     b.user_id as "bookmark_user_id",
-    nv.user_id as "note_user_id",
-    nv.book_id,
-    nv.note,
-    nv.is_private,
-    nv.created_on,
-    nv.modified_on,
-    nv."user",
-    nv.book_name,
-    nv.author,
-    nv.comments,
-    nv.short_date
+    gv.user_id as "gram_user_id",
+    gv.book_id,
+    gv.gram,
+    gv.is_private,
+    gv.created_on,
+    gv.modified_on,
+    gv."user",
+    gv.book_name,
+    gv.author,
+    gv.comments,
+    gv.short_date
   from
-    note_vw nv,
+    gram_vw gv,
     bookmark b
   where
-    nv.id = b.note_id
+    gv.id = b.gram_id
 `);
 
 export const CommentView = pgView("comment_vw", {
   id: text("id"),
   userId: text("user_id"),
-  noteId: text("note_id"),
+  gramId: text("gram_id"),
   comment: text("comment"),
   createdOn: timestamp("created_on"),
   user: text("user"),

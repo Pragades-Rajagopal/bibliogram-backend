@@ -10,11 +10,11 @@ export const upsertCommentValidation = [
     .not()
     .isEmpty()
     .withMessage("userId is mandatory and should be an UUID"),
-  body("noteId")
+  body("gramId")
     .exists()
     .not()
     .isEmpty()
-    .withMessage("noteId is mandatory and should be an UUID"),
+    .withMessage("gramId is mandatory and should be an UUID"),
   body("id").optional().isUUID().withMessage("id should be an UUID"),
   (request: Request, response: Response, next: NextFunction): any => {
     const validationError = validationResult(request);
@@ -53,7 +53,7 @@ export const idValidation = [
 
 export const getCommentByQueryValidation = [
   query("userId").optional().isUUID().withMessage("userId should be an UUID"),
-  query("noteId").optional().isUUID().withMessage("noteId should be an UUID"),
+  query("gramId").optional().isUUID().withMessage("gramId should be an UUID"),
   query("limit").optional().isNumeric().withMessage("limit should be a number"),
   query("offset")
     .optional()

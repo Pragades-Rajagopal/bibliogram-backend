@@ -1,10 +1,9 @@
 import { desc, eq, ilike, or, asc, count, sql, inArray } from "drizzle-orm";
 import constants from "../config/constants";
 import { db } from "../drizzle/db";
-import { Book, Note, User } from "../drizzle/schema";
+import { Book, Gram, User } from "../drizzle/schema";
 import { IBook } from "../interfaces/book";
-import { RowList } from "postgres";
-import { updateStats } from "./appStats";
+import { updateAppStats } from "./appStats";
 
 /**
  * Adds book data with bulk load
@@ -42,7 +41,7 @@ export const bulkInsertBookModel = async (
         id: Book.id,
       });
     if (result.length) {
-      await updateStats("book", result.length);
+      await updateAppStats("book", result.length);
     }
   } catch (error: any) {
     console.error(error);
@@ -107,18 +106,18 @@ export const getBook = async (id: string): Promise<any> => {
 };
 
 /**
- * Gets top books having number of notes
+ * Gets top books having number of grams
  * @returns {Promise}
  */
 export const getTopBooksModel = async (): Promise<any> => {
   try {
-    const notesCountSubQuery = db
+    const gramCountSubQuery = db
       .select({
-        notesCount: count().as("notesCount"),
+        gramsCount: count().as("gramsCount"),
       })
-      .from(Note)
-      .where(eq(Note.bookId, Book.id))
-      .groupBy(Note.bookId);
+      .from(Gram)
+      .where(eq(Gram.bookId, Book.id))
+      .groupBy(Gram.bookId);
     return await db
       .select({
         id: Book.id,
@@ -128,11 +127,11 @@ export const getTopBooksModel = async (): Promise<any> => {
         rating: Book.rating,
         pages: Book.pages,
         publishedOn: Book.publishedOn,
-        notesCount: sql<number>`(${notesCountSubQuery})`,
+        gramsCount: sql<number>`(${gramCountSubQuery})`,
       })
       .from(Book)
-      .where(sql`${notesCountSubQuery} > 0`)
-      .orderBy(desc(sql`${notesCountSubQuery}`), asc(Book.name))
+      .where(sql`${gramCountSubQuery} > 0`)
+      .orderBy(desc(sql`${gramCountSubQuery}`), asc(Book.name))
       .limit(50);
   } catch (error) {
     console.error(error);

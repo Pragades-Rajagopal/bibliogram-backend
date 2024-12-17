@@ -1,10 +1,10 @@
 import { and, eq, ilike, or, sql } from "drizzle-orm";
 import { db } from "../drizzle/db";
-import { Book, NoteView } from "../drizzle/schema";
+import { Book, GramView } from "../drizzle/schema";
 import constants from "../config/constants";
 
 /**
- * Global books and note search
+ * Global books and gram search
  * @param {string} value
  * @returns {Promise<any>}
  */
@@ -21,7 +21,7 @@ export const searchModel = async (value: string): Promise<any> => {
         field4: Book.author,
         field5: sql<string>`(
           SELECT COUNT(1)
-          FROM note
+          FROM gram
           WHERE book_id = book.id
         )::text`,
       })
@@ -32,25 +32,25 @@ export const searchModel = async (value: string): Promise<any> => {
           ilike(Book.author, `%${searchValue}%`)
         )
       );
-    const noteQuery = db
+    const gramQuery = db
       .select({
-        type: sql`'note'`,
-        id: NoteView.id,
-        field1: NoteView.note,
-        field2: NoteView.user,
-        field3: NoteView.book,
-        field4: NoteView.author,
-        field5: NoteView.shortDate,
+        type: sql`'gram'`,
+        id: GramView.id,
+        field1: GramView.gram,
+        field2: GramView.user,
+        field3: GramView.book,
+        field4: GramView.author,
+        field5: GramView.shortDate,
       })
-      .from(NoteView)
+      .from(GramView)
       .where(
         and(
-          ilike(NoteView.note, `%${searchValue}%`),
-          eq(NoteView.isPrivate, false)
+          ilike(GramView.gram, `%${searchValue}%`),
+          eq(GramView.isPrivate, false)
         )
       );
-    const [bookResult, noteResult] = await Promise.all([bookQuery, noteQuery]);
-    return [...bookResult, ...noteResult];
+    const [bookResult, gramResult] = await Promise.all([bookQuery, gramQuery]);
+    return [...bookResult, ...gramResult];
   } catch (error) {
     console.error(error);
     throw new Error(constants.search.error);

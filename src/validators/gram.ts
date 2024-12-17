@@ -4,7 +4,7 @@ import constants from "../config/constants";
 import { responseObject } from "../utils/response";
 
 export const addOrUpdateValidation = [
-  body("note").exists().not().isEmpty().withMessage("note is mandatory"),
+  body("gram").exists().not().isEmpty().withMessage("gram is mandatory"),
   body("userId")
     .exists()
     .not()
@@ -23,7 +23,7 @@ export const addOrUpdateValidation = [
     .isEmpty()
     .isBoolean()
     .withMessage("isPrivate is mandatory"),
-  body("noteId").optional().isUUID(),
+  body("gramId").optional().isUUID(),
   (request: Request, response: Response, next: NextFunction): any => {
     const validationError = validationResult(request);
     if (!validationError.isEmpty()) {
@@ -68,14 +68,14 @@ export const updateVisibilityValidation = [
     .withMessage("id is mandatory and should be an UUID"),
   param("flag").custom((value) => {
     if (
-      value !== constants.note.privateFlag &&
-      value !== constants.note.publicFlag
+      value !== constants.gram.privateFlag &&
+      value !== constants.gram.publicFlag
     ) {
       throw new Error("flag can only take 'private' or 'public'");
     }
     return true;
   }),
-  body("noteId").optional().isUUID(),
+  body("gramId").optional().isUUID(),
   (request: Request, response: Response, next: NextFunction): any => {
     const validationError = validationResult(request);
     if (!validationError.isEmpty()) {
@@ -90,7 +90,7 @@ export const updateVisibilityValidation = [
   },
 ];
 
-export const getNotesByQueryValidation = [
+export const getGramsByQueryValidation = [
   query("userId").optional().isUUID().withMessage("userId should be an UUID"),
   query("bookId").optional().isUUID().withMessage("bookId should be an UUID"),
   query("limit").optional().isNumeric().withMessage("limit should be a number"),
@@ -119,12 +119,12 @@ export const saveBookmarkValidation = [
     .isEmpty()
     .isUUID()
     .withMessage("userId is mandatory and should be an UUID"),
-  body("noteId")
+  body("gramId")
     .exists()
     .not()
     .isEmpty()
     .isUUID()
-    .withMessage("noteId is mandatory and should be an UUID"),
+    .withMessage("gramId is mandatory and should be an UUID"),
   (request: Request, response: Response, next: NextFunction): any => {
     const validationError = validationResult(request);
     if (!validationError.isEmpty()) {
@@ -146,12 +146,12 @@ export const bookmarkParamsValidation = [
     .isEmpty()
     .isUUID()
     .withMessage("userId is mandatory and should be an UUID"),
-  param("noteId")
+  param("gramId")
     .exists()
     .not()
     .isEmpty()
     .isUUID()
-    .withMessage("noteId is mandatory and should be an UUID"),
+    .withMessage("gramId is mandatory and should be an UUID"),
   (request: Request, response: Response, next: NextFunction): any => {
     const validationError = validationResult(request);
     if (!validationError.isEmpty()) {

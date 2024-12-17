@@ -1,7 +1,7 @@
 import { eq, sql } from "drizzle-orm";
 import constants from "../config/constants";
 import { db } from "../drizzle/db";
-import { AppStats } from "../drizzle/schema";
+import { AppStats, UserStats } from "../drizzle/schema";
 
 /**
  * Updates app stats for app base page
@@ -9,8 +9,8 @@ import { AppStats } from "../drizzle/schema";
  * @param {number} increment
  * @returns {Promise}
  */
-export const updateStats = async (
-  type: "note" | "book",
+export const updateAppStats = async (
+  type: "gram" | "book",
   increment: number
 ): Promise<any> => {
   try {
@@ -27,7 +27,7 @@ export const updateStats = async (
       .from(AppStats);
     if (!statsInfo || statsInfo.length === 0) {
       await db.insert(AppStats).values({
-        gramsPosted: type === "note" ? 0 + increment : 0,
+        gramsPosted: type === "gram" ? 0 + increment : 0,
         booksSeeded: type === "book" ? 0 + increment : 0,
       });
     } else {
@@ -35,7 +35,7 @@ export const updateStats = async (
         .update(AppStats)
         .set({
           gramsPosted:
-            type === "note"
+            type === "gram"
               ? statsInfo[0]?.grams! + increment
               : statsInfo[0]?.grams!,
           booksSeeded:
@@ -54,6 +54,67 @@ export const updateStats = async (
 };
 
 /**
+ * Updates user stats for app base page
+ * @param {string} userId
+ * @param {string} type
+ * @param {number} increment
+ * @returns {Promise}
+ */
+export const updateUserStats = async (
+  userId: string,
+  type: "gram" | "wishlist",
+  increment: number
+): Promise<any> => {
+  try {
+    const statsInfo: {
+      userId: string;
+      gramsCount: number | null;
+      wishlist: number | null;
+      conpletedBooks: number | null;
+    }[] = await db
+      .select({
+        userId: UserStats.userId,
+        gramsCount: UserStats.gramsCount,
+        wishlist: UserStats.wishlist,
+        conpletedBooks: UserStats.completedBooks,
+      })
+      .from(UserStats)
+      .where(eq(UserStats.userId, userId));
+    if (!statsInfo || statsInfo.length === 0) {
+      await db.insert(UserStats).values({
+        userId: userId,
+        gramsCount: type === "gram" ? 0 + increment : 0,
+        wishlist: type === "wishlist" ? 0 + increment : 0,
+        completedBooks: type === "wishlist" ? 0 + increment : 0,
+      });
+    } else {
+      await db
+        .update(UserStats)
+        .set({
+          gramsCount:
+            type === "gram"
+              ? statsInfo[0]?.gramsCount! + increment
+              : statsInfo[0]?.gramsCount!,
+          wishlist:
+            type === "wishlist"
+              ? statsInfo[0]?.wishlist! + increment
+              : statsInfo[0]?.wishlist!,
+          completedBooks:
+            type === "wishlist"
+              ? statsInfo[0]?.conpletedBooks! + increment
+              : statsInfo[0]?.conpletedBooks!,
+        })
+        .where(eq(UserStats.userId, statsInfo[0].userId));
+    }
+  } catch (error: any) {
+    console.error(error);
+    throw new Error(
+      `${constants.commonServerError.internal} - ${constants.debugErrorCodes.userStats.upsert}`
+    );
+  }
+};
+
+/**
  * Retrieves app stats
  * @param {string} userId
  * @returns {Promise<any>}
@@ -62,38 +123,17 @@ export const getStats = async (userId: string): Promise<any> => {
   try {
     const result = db.execute(sql`
             select
-                grams_psted::text,
-                books_seeded::text,
-                top_books_count.count as "top_books",
-                user_grams.count as "your_grams"
+              as1.grams_posted,
+              as1.books_seeded,
+              us.grams_count as "your_grams",
+              us.wishlist,
+              us.completed_books as "books_completed"
             from
-                app_stats,
-                (
-                select
-                    count(1)
-                from
-                    (
-                    select
-                        (
-                        select
-                            COUNT(1)
-                        from
-                            note n
-                        where
-                            n.book_id = b.id) as "notes_count",
-                        b.name
-                    from
-                        book b)
-                where
-                    "notes_count" > 0
-                limit 50) as top_books_count,
-                (
-                select
-                    count(1)
-                from
-                    note
-                where
-                    user_id = ${userId}) as user_grams;
+              app_stats as1
+            full outer join user_stats us on
+              1 = 1
+            where
+              us.user_id = ${userId}
         `);
     return result;
   } catch (error) {

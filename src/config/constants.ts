@@ -27,13 +27,13 @@ export default {
       getTopBooks: "EB003",
       bulkDelete: "EB004",
     },
-    noteComponent: {
+    gramComponent: {
       upsert: "EN000",
       get: "EN001",
       updateVisibility: "EN002",
       delete: "EN003",
     },
-    bookmarkNoteComponent: {
+    bookmarkGramComponent: {
       save: "ES000",
       get: "ES001",
       remove: "ES002",
@@ -47,6 +47,9 @@ export default {
     appStats: {
       upsert: "EA000",
       get: "EA001",
+    },
+    userStats: {
+      upsert: "ES000",
     },
   },
   user: {
@@ -89,15 +92,15 @@ export default {
     deleteSuccess: "Book(s) deleted successfully",
     deleteError: "Error while deleting books",
   },
-  note: {
-    upsertSuccess: "Note added/updated successfully",
-    upsertFailure: "Error while adding/updating note",
-    upsertBadRequest: "Request data is incorrect to update note",
-    found: "Note found",
-    notFound: "Note(s) not found for the given id or query",
-    getError: "Error while retrieving notes",
-    deleteSuccess: "Note deleted successfully",
-    deleteFailure: "Error while deleting note",
+  gram: {
+    upsertSuccess: "gram added/updated successfully",
+    upsertFailure: "Error while adding/updating gram",
+    upsertBadRequest: "Request data is incorrect to update gram",
+    found: "gram found",
+    notFound: "gram(s) not found for the given id or query",
+    getError: "Error while retrieving grams",
+    deleteSuccess: "gram deleted successfully",
+    deleteFailure: "Error while deleting gram",
     publicFlag: "public",
     privateFlag: "private",
     updateFlagSuccess: "Visibility updated successfully",
@@ -121,8 +124,8 @@ export default {
     notData: "No result for the given value",
   },
   bookmark: {
-    addSuccess: "Note bookmarked for later",
-    addFailure: "Error while bookmarking note for later",
+    addSuccess: "gram bookmarked for later",
+    addFailure: "Error while bookmarking gram for later",
     found: "Bookmarks found",
     notFound: "No bookmarks found",
     getError: "Error while getting bookmarks",
@@ -131,7 +134,7 @@ export default {
     exists: "Bookmark already exists",
   },
   assetValidation: {
-    noteNotExists: "Note not found to perform this operation",
+    gramNotExists: "gram not found to perform this operation",
     bookNotExists: "Book not found to perform this operation",
     commentNotExists: "Comment not found to perform this operation",
     userNotExists: "User not found to perform this operation",

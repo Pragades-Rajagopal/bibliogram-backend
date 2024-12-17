@@ -2,7 +2,7 @@ CREATE TYPE "public"."user_role" AS ENUM('user', 'admin');--> statement-breakpoi
 CREATE TYPE "public"."user_status" AS ENUM('active', 'inactive');--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "app_stats" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"grams_psted" integer,
+	"grams_posted" integer,
 	"books_seeded" integer
 );
 --> statement-breakpoint
@@ -20,13 +20,13 @@ CREATE TABLE IF NOT EXISTS "book" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "bookmark" (
 	"user_id" uuid NOT NULL,
-	"note_id" uuid NOT NULL
+	"gram_id" uuid NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "comment" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
-	"note_id" uuid NOT NULL,
+	"gram_id" uuid NOT NULL,
 	"comment" varchar NOT NULL,
 	"created_on" timestamp DEFAULT now() NOT NULL
 );
@@ -40,11 +40,11 @@ CREATE TABLE IF NOT EXISTS "deactivated_user" (
 	"usage_days" integer
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "note" (
+CREATE TABLE IF NOT EXISTS "gram" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
 	"book_id" uuid NOT NULL,
-	"note" varchar NOT NULL,
+	"gram" varchar NOT NULL,
 	"is_private" boolean DEFAULT true NOT NULL,
 	"created_on" timestamp DEFAULT now() NOT NULL,
 	"modified_on" timestamp DEFAULT now() NOT NULL
@@ -69,6 +69,13 @@ CREATE TABLE IF NOT EXISTS "user_login" (
 	"logged_out" timestamp
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "user_stats" (
+	"user_id" uuid PRIMARY KEY NOT NULL,
+	"grams_count" integer,
+	"wishlist" integer,
+	"completed_books" integer
+);
+--> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "book" ADD CONSTRAINT "book_created_by_user_table_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."user_table"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
@@ -82,7 +89,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "bookmark" ADD CONSTRAINT "bookmark_note_id_note_id_fk" FOREIGN KEY ("note_id") REFERENCES "public"."note"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "bookmark" ADD CONSTRAINT "bookmark_gram_id_gram_id_fk" FOREIGN KEY ("gram_id") REFERENCES "public"."gram"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -94,19 +101,19 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "comment" ADD CONSTRAINT "comment_note_id_note_id_fk" FOREIGN KEY ("note_id") REFERENCES "public"."note"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "comment" ADD CONSTRAINT "comment_gram_id_gram_id_fk" FOREIGN KEY ("gram_id") REFERENCES "public"."gram"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "note" ADD CONSTRAINT "note_user_id_user_table_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user_table"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "gram" ADD CONSTRAINT "gram_user_id_user_table_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user_table"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "note" ADD CONSTRAINT "note_book_id_book_id_fk" FOREIGN KEY ("book_id") REFERENCES "public"."book"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "gram" ADD CONSTRAINT "gram_book_id_book_id_fk" FOREIGN KEY ("book_id") REFERENCES "public"."book"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -117,13 +124,19 @@ EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "user_stats" ADD CONSTRAINT "user_stats_user_id_user_table_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user_table"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "book_name_index" ON "book" USING btree ("name");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "book_author_index" ON "book" USING btree ("author");--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS "bookmark_composite_index" ON "bookmark" USING btree ("user_id","note_id");--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "bookmark_composite_index" ON "bookmark" USING btree ("user_id","gram_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "comment_user_index" ON "comment" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "comment_note_index" ON "comment" USING btree ("note_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "note_user_index" ON "note" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "note_book_index" ON "note" USING btree ("book_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "comment_gram_index" ON "comment" USING btree ("gram_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "gram_user_index" ON "gram" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "gram_book_index" ON "gram" USING btree ("book_id");--> statement-breakpoint
 CREATE UNIQUE INDEX IF NOT EXISTS "username_index" ON "user_table" USING btree ("username");--> statement-breakpoint
 CREATE VIEW "public"."comment_vw" AS (
   select
@@ -138,15 +151,15 @@ CREATE VIEW "public"."comment_vw" AS (
   where
     c.user_id = u.id
 );--> statement-breakpoint
-CREATE VIEW "public"."note_vw" AS (
+CREATE VIEW "public"."gram_vw" AS (
   select
-    n.id,
-    n.user_id,
-    n.book_id,
-    n.note,
-    n.is_private,
-    n.created_on,
-    n.modified_on,
+    g.id,
+    g.user_id,
+    g.book_id,
+    g.gram,
+    g.is_private,
+    g.created_on,
+    g.modified_on,
     u.fullname as user,
     b.name as book_name,
     b.author,
@@ -156,36 +169,36 @@ CREATE VIEW "public"."note_vw" AS (
     from
       comment c
     where
-      c.note_id = n.id
+      c.gram_id = g.id
         ) as comments,
-    TO_CHAR(n.modified_on,
-    'DD') || ' ' || TO_CHAR(n.modified_on,
+    TO_CHAR(g.modified_on,
+    'DD') || ' ' || TO_CHAR(g.modified_on,
     'Mon') as short_date
   from
-    note n
+    gram g
   join user_table u on
-    n.user_id = u.id
+    g.user_id = u.id
   join book b on
-    n.book_id = b.id  
+    g.book_id = b.id  
 );--> statement-breakpoint
 CREATE VIEW "public"."bookmark_vw" AS (
   select
-    b.note_id ,
+    b.gram_id ,
     b.user_id as "bookmark_user_id",
-    nv.user_id as "note_user_id",
-    nv.book_id,
-    nv.note,
-    nv.is_private,
-    nv.created_on,
-    nv.modified_on,
-    nv."user",
-    nv.book_name,
-    nv.author,
-    nv.comments,
-    nv.short_date
+    gv.user_id as "gram_user_id",
+    gv.book_id,
+    gv.gram,
+    gv.is_private,
+    gv.created_on,
+    gv.modified_on,
+    gv."user",
+    gv.book_name,
+    gv.author,
+    gv.comments,
+    gv.short_date
   from
-    note_vw nv,
+    gram_vw gv,
     bookmark b
   where
-    nv.id = b.note_id
+    gv.id = b.gram_id
 );

@@ -144,7 +144,7 @@ export const getBookById = async (
 };
 
 /**
- * Gets the top 50 books based on the notes added
+ * Gets the top 50 books based on the grams added
  * @param {Request} _
  * @param {Response} response
  * @returns {Promise<Response>}

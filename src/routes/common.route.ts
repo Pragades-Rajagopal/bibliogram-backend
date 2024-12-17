@@ -3,14 +3,14 @@ const router = Router();
 // Components
 import * as UserComponent from "../components/User";
 import * as BookComponent from "../components/Book";
-import * as NoteComponent from "../components/Note";
+import * as GramComponent from "../components/Gram";
 import * as CommentComponent from "../components/Comment";
 import * as SearchComponent from "../components/Search";
 import * as AppStatsComponent from "../components/AppStats";
 //Validators
 import * as userValidators from "../validators/user";
 import * as bookValidators from "../validators/book";
-import * as noteValidators from "../validators/note";
+import * as gramValidators from "../validators/gram";
 import * as commentValidators from "../validators/comment";
 import * as searchValidators from "../validators/search";
 import { authenticateToken } from "../services/auth";
@@ -62,37 +62,37 @@ router.delete(
 );
 
 /**
- * Note routes
+ * gram routes
  */
 router.put(
-  "/note",
+  "/gram",
   authenticateToken,
-  noteValidators.addOrUpdateValidation,
-  NoteComponent.upsertNote
+  gramValidators.addOrUpdateValidation,
+  GramComponent.upsertGram
 );
 router.get(
-  "/note/:id",
+  "/gram/:id",
   authenticateToken,
-  noteValidators.idValidation,
-  NoteComponent.getNoteById
+  gramValidators.idValidation,
+  GramComponent.getGramById
 );
 router.get(
-  "/notes",
+  "/grams",
   authenticateToken,
-  noteValidators.getNotesByQueryValidation,
-  NoteComponent.getNotesByQuery
+  gramValidators.getGramsByQueryValidation,
+  GramComponent.getGramsByQuery
 );
 router.delete(
-  "/note/:id",
+  "/gram/:id",
   authenticateToken,
-  noteValidators.idValidation,
-  NoteComponent.deleteNote
+  gramValidators.idValidation,
+  GramComponent.deleteGram
 );
 router.get(
-  "/note-visibility/:id/:flag",
+  "/gram-visibility/:id/:flag",
   authenticateToken,
-  noteValidators.updateVisibilityValidation,
-  NoteComponent.updateNoteVisibility
+  gramValidators.updateVisibilityValidation,
+  GramComponent.updateGramVisibility
 );
 
 /**
@@ -101,26 +101,26 @@ router.get(
 router.post(
   "/bookmark",
   authenticateToken,
-  noteValidators.saveBookmarkValidation,
-  NoteComponent.bookmarkNote
+  gramValidators.saveBookmarkValidation,
+  GramComponent.bookmarkGram
 );
 router.get(
   "/bookmark/:id",
   authenticateToken,
-  noteValidators.idValidation,
-  NoteComponent.getBookmarks
+  gramValidators.idValidation,
+  GramComponent.getBookmarks
 );
 router.delete(
-  "/bookmark/:noteId/:userId",
+  "/bookmark/:gramId/:userId",
   authenticateToken,
-  noteValidators.bookmarkParamsValidation,
-  NoteComponent.deleteBookmark
+  gramValidators.bookmarkParamsValidation,
+  GramComponent.deleteBookmark
 );
 router.get(
-  "/is-bookmarked/:noteId/:userId",
+  "/is-bookmarked/:gramId/:userId",
   authenticateToken,
-  noteValidators.bookmarkParamsValidation,
-  NoteComponent.isBookmarked
+  gramValidators.bookmarkParamsValidation,
+  GramComponent.isBookmarked
 );
 
 /**

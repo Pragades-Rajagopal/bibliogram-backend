@@ -9,7 +9,7 @@ import constants from "../config/constants";
 import { responseObject } from "../utils/response";
 
 /**
- * Adds or updates comment to a note
+ * Adds or updates comment to a gram
  * @param {Request} request
  * @param {Response} response
  * @returns {Promise<any>}
@@ -94,7 +94,7 @@ export const getCommentById = async (
 /**
  * Gets comment with query
  *
- * * Filter with `note id` or `user id` or both
+ * * Filter with `gram id` or `user id` or both
  * * Paginate with `limit` and `offset`
  * @param {Request} request
  * @param {Response} response
@@ -105,10 +105,10 @@ export const getCommentByQuery = async (
   response: Response
 ): Promise<any> => {
   try {
-    const { noteId, userId, limit, offset } = request.query;
+    const { gramId, userId, limit, offset } = request.query;
     const data: [] = await getCommentModel(
       undefined,
-      noteId as string,
+      gramId as string,
       userId as string,
       limit as string,
       offset as string

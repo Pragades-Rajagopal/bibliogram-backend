@@ -1,7 +1,7 @@
 import { and, eq, sql } from "drizzle-orm";
 import constants from "../config/constants";
 import { db } from "../drizzle/db";
-import { DeactivatedUser, User, UserLogin } from "../drizzle/schema";
+import { DeactivatedUser, User, UserLogin, UserStats } from "../drizzle/schema";
 import { SaveUserRequest } from "../interfaces/user";
 
 /**
@@ -11,12 +11,26 @@ import { SaveUserRequest } from "../interfaces/user";
  */
 export const saveUserModel = async (data: SaveUserRequest): Promise<any> => {
   try {
-    await db.insert(User).values({
-      fullname: data.fullname,
-      username: data.username,
-      privateKey: data.privateKey,
-      role: data.role ?? "user",
-    });
+    const user = await db
+      .insert(User)
+      .values({
+        fullname: data.fullname,
+        username: data.username,
+        privateKey: data.privateKey,
+        role: data.role ?? "user",
+      })
+      .returning({
+        userId: User.id,
+      });
+    // Create a dummy entry in user_stats model
+    if (user[0]?.userId) {
+      await db.insert(UserStats).values({
+        userId: user[0]?.userId,
+        gramsCount: 0,
+        wishlist: 0,
+        completedBooks: 0,
+      });
+    }
   } catch (error: any) {
     console.error(`saveUserModel error > ${error}`);
     if (error?.code == constants.databaseErrors.uniqueConstraintCode) {
@@ -61,7 +75,7 @@ export const getUserInfoModel = async (
 /**
  * Saves user login info after successful login
  *
- * `Note: Deletes previous login entry`
+ * `gram: Deletes previous login entry`
  * @param {string} userId
  * @param {string} token
  * @returns null

@@ -17,7 +17,7 @@ export const upsertCommentModel = async (data: IComment): Promise<any> => {
         id: data.id,
         comment: data.comment,
         userId: data.userId,
-        noteId: data.noteId,
+        gramId: data.gramId,
       })
       .onConflictDoUpdate({
         target: Comment.id,
@@ -26,7 +26,7 @@ export const upsertCommentModel = async (data: IComment): Promise<any> => {
         },
         setWhere: and(
           eq(Comment.userId, data.userId),
-          eq(Comment.noteId, data.noteId)
+          eq(Comment.gramId, data.gramId)
         ),
       })
       .returning({
@@ -35,20 +35,20 @@ export const upsertCommentModel = async (data: IComment): Promise<any> => {
   } catch (error: any) {
     if (error?.code === "23503")
       throw new Error(
-        `${constants.assetValidation.userNotExists} or ${constants.assetValidation.noteNotExists}`
+        `${constants.assetValidation.userNotExists} or ${constants.assetValidation.gramNotExists}`
       );
     throw new Error(error?.message);
   }
 };
 
 /**
- * Gets the comments for note
+ * Gets the comments for gram
  *
  * * Fetch a comment with `comment id`
- * * Filter with `note id` or `user id` or both
+ * * Filter with `gram id` or `user id` or both
  * * Paginate with `limit` and `offset`
  * @param {string} commentId
- * @param {string} noteId
+ * @param {string} gramId
  * @param {string} userId
  * @param {string} limit
  * @param {string} offset
@@ -56,7 +56,7 @@ export const upsertCommentModel = async (data: IComment): Promise<any> => {
  */
 export const getCommentModel = async (
   commentId?: string,
-  noteId?: string,
+  gramId?: string,
   userId?: string,
   limit?: string,
   offset?: string
@@ -66,13 +66,13 @@ export const getCommentModel = async (
     if (commentId) {
       whereClause = eq(CommentView.id, commentId);
     }
-    if (noteId && userId) {
+    if (gramId && userId) {
       whereClause = and(
-        eq(CommentView.noteId, noteId),
+        eq(CommentView.gramId, gramId),
         eq(CommentView.userId, userId)
       );
-    } else if (noteId) {
-      whereClause = and(eq(CommentView.noteId, noteId));
+    } else if (gramId) {
+      whereClause = and(eq(CommentView.gramId, gramId));
     } else if (userId) {
       whereClause = and(eq(CommentView.userId, userId));
     }

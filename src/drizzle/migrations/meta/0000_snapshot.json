@@ -1,5 +1,5 @@
 {
-  "id": "4c3f1904-c6c7-42dd-802e-ed7b6d95ae30",
+  "id": "cfe3b4d2-a336-4233-8d84-43981ebe8d3b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -15,8 +15,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "grams_psted": {
-          "name": "grams_psted",
+        "grams_posted": {
+          "name": "grams_posted",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
@@ -160,8 +160,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "note_id": {
-          "name": "note_id",
+        "gram_id": {
+          "name": "gram_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -178,7 +178,7 @@
               "nulls": "last"
             },
             {
-              "expression": "note_id",
+              "expression": "gram_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -204,12 +204,12 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "bookmark_note_id_note_id_fk": {
-          "name": "bookmark_note_id_note_id_fk",
+        "bookmark_gram_id_gram_id_fk": {
+          "name": "bookmark_gram_id_gram_id_fk",
           "tableFrom": "bookmark",
-          "tableTo": "note",
+          "tableTo": "gram",
           "columnsFrom": [
-            "note_id"
+            "gram_id"
           ],
           "columnsTo": [
             "id"
@@ -241,8 +241,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "note_id": {
-          "name": "note_id",
+        "gram_id": {
+          "name": "gram_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -277,11 +277,11 @@
           "method": "btree",
           "with": {}
         },
-        "comment_note_index": {
-          "name": "comment_note_index",
+        "comment_gram_index": {
+          "name": "comment_gram_index",
           "columns": [
             {
-              "expression": "note_id",
+              "expression": "gram_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -307,12 +307,12 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "comment_note_id_note_id_fk": {
-          "name": "comment_note_id_note_id_fk",
+        "comment_gram_id_gram_id_fk": {
+          "name": "comment_gram_id_gram_id_fk",
           "tableFrom": "comment",
-          "tableTo": "note",
+          "tableTo": "gram",
           "columnsFrom": [
-            "note_id"
+            "gram_id"
           ],
           "columnsTo": [
             "id"
@@ -378,8 +378,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.note": {
-      "name": "note",
+    "public.gram": {
+      "name": "gram",
       "schema": "",
       "columns": {
         "id": {
@@ -401,8 +401,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "note": {
-          "name": "note",
+        "gram": {
+          "name": "gram",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
@@ -430,8 +430,8 @@
         }
       },
       "indexes": {
-        "note_user_index": {
-          "name": "note_user_index",
+        "gram_user_index": {
+          "name": "gram_user_index",
           "columns": [
             {
               "expression": "user_id",
@@ -445,8 +445,8 @@
           "method": "btree",
           "with": {}
         },
-        "note_book_index": {
-          "name": "note_book_index",
+        "gram_book_index": {
+          "name": "gram_book_index",
           "columns": [
             {
               "expression": "book_id",
@@ -462,9 +462,9 @@
         }
       },
       "foreignKeys": {
-        "note_user_id_user_table_id_fk": {
-          "name": "note_user_id_user_table_id_fk",
-          "tableFrom": "note",
+        "gram_user_id_user_table_id_fk": {
+          "name": "gram_user_id_user_table_id_fk",
+          "tableFrom": "gram",
           "tableTo": "user_table",
           "columnsFrom": [
             "user_id"
@@ -475,9 +475,9 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "note_book_id_book_id_fk": {
-          "name": "note_book_id_book_id_fk",
-          "tableFrom": "note",
+        "gram_book_id_book_id_fk": {
+          "name": "gram_book_id_book_id_fk",
+          "tableFrom": "gram",
           "tableTo": "book",
           "columnsFrom": [
             "book_id"
@@ -637,6 +637,57 @@
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
+    },
+    "public.user_stats": {
+      "name": "user_stats",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "grams_count": {
+          "name": "grams_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "wishlist": {
+          "name": "wishlist",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completed_books": {
+          "name": "completed_books",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_stats_user_id_user_table_id_fk": {
+          "name": "user_stats_user_id_user_table_id_fk",
+          "tableFrom": "user_stats",
+          "tableTo": "user_table",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {
@@ -664,8 +715,8 @@
   "views": {
     "public.bookmark_vw": {
       "columns": {
-        "note_id": {
-          "name": "note_id",
+        "gram_id": {
+          "name": "gram_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -676,8 +727,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "note_user_id": {
-          "name": "note_user_id",
+        "gram_user_id": {
+          "name": "gram_user_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -688,8 +739,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "note": {
-          "name": "note",
+        "gram": {
+          "name": "gram",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -743,7 +794,7 @@
           "notNull": false
         }
       },
-      "definition": "\n  select\n    b.note_id ,\n    b.user_id as \"bookmark_user_id\",\n    nv.user_id as \"note_user_id\",\n    nv.book_id,\n    nv.note,\n    nv.is_private,\n    nv.created_on,\n    nv.modified_on,\n    nv.\"user\",\n    nv.book_name,\n    nv.author,\n    nv.comments,\n    nv.short_date\n  from\n    note_vw nv,\n    bookmark b\n  where\n    nv.id = b.note_id\n",
+      "definition": "\n  select\n    b.gram_id ,\n    b.user_id as \"bookmark_user_id\",\n    gv.user_id as \"gram_user_id\",\n    gv.book_id,\n    gv.gram,\n    gv.is_private,\n    gv.created_on,\n    gv.modified_on,\n    gv.\"user\",\n    gv.book_name,\n    gv.author,\n    gv.comments,\n    gv.short_date\n  from\n    gram_vw gv,\n    bookmark b\n  where\n    gv.id = b.gram_id\n",
       "name": "bookmark_vw",
       "schema": "public",
       "isExisting": false,
@@ -763,8 +814,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "note_id": {
-          "name": "note_id",
+        "gram_id": {
+          "name": "gram_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -800,7 +851,7 @@
       "isExisting": false,
       "materialized": false
     },
-    "public.note_vw": {
+    "public.gram_vw": {
       "columns": {
         "id": {
           "name": "id",
@@ -820,8 +871,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "note": {
-          "name": "note",
+        "gram": {
+          "name": "gram",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -875,8 +926,8 @@
           "notNull": false
         }
       },
-      "definition": "\n  select\n    n.id,\n    n.user_id,\n    n.book_id,\n    n.note,\n    n.is_private,\n    n.created_on,\n    n.modified_on,\n    u.fullname as user,\n    b.name as book_name,\n    b.author,\n    (\n    select\n      COUNT(1)\n    from\n      comment c\n    where\n      c.note_id = n.id\n        ) as comments,\n    TO_CHAR(n.modified_on,\n    'DD') || ' ' || TO_CHAR(n.modified_on,\n    'Mon') as short_date\n  from\n    note n\n  join user_table u on\n    n.user_id = u.id\n  join book b on\n    n.book_id = b.id  \n",
-      "name": "note_vw",
+      "definition": "\n  select\n    g.id,\n    g.user_id,\n    g.book_id,\n    g.gram,\n    g.is_private,\n    g.created_on,\n    g.modified_on,\n    u.fullname as user,\n    b.name as book_name,\n    b.author,\n    (\n    select\n      COUNT(1)\n    from\n      comment c\n    where\n      c.gram_id = g.id\n        ) as comments,\n    TO_CHAR(g.modified_on,\n    'DD') || ' ' || TO_CHAR(g.modified_on,\n    'Mon') as short_date\n  from\n    gram g\n  join user_table u on\n    g.user_id = u.id\n  join book b on\n    g.book_id = b.id  \n",
+      "name": "gram_vw",
       "schema": "public",
       "isExisting": false,
       "materialized": false
