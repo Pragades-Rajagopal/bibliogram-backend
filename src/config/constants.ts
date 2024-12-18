@@ -47,6 +47,7 @@ export default {
     appStats: {
       upsert: "EA000",
       get: "EA001",
+      decrement: "EA002",
     },
     userStats: {
       upsert: "ES000",

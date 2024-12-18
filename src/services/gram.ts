@@ -3,7 +3,11 @@ import constants from "../config/constants";
 import { db } from "../drizzle/db";
 import { Bookmark, BookmarkView, Gram, GramView } from "../drizzle/schema";
 import { IGram, IBookmarkGram } from "../interfaces/book";
-import { updateAppStats, updateUserStats } from "./appStats";
+import {
+  decrementStatsCount,
+  updateAppStats,
+  updateUserStats,
+} from "./appStats";
 
 /**
  * Add/update gram
@@ -152,12 +156,14 @@ export const deleteGramModel = async (
   userId: string
 ): Promise<any> => {
   try {
-    return await db
+    const result = await db
       .delete(Gram)
       .where(and(eq(Gram.id, id), eq(Gram.userId, userId)))
       .returning({
         id: Gram.id,
       });
+    if (result[0]?.id) await decrementStatsCount(userId, "gram");
+    return result;
   } catch (error) {
     console.error(error);
     throw new Error(

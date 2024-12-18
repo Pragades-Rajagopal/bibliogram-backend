@@ -143,3 +143,74 @@ export const getStats = async (userId: string): Promise<any> => {
     );
   }
 };
+
+/**
+ * Decrements stats count upon gram deletion
+ * @param {string} userId
+ * @param {string} type
+ * @returns {Promise<void>}
+ */
+export const decrementStatsCount = async (
+  userId: string,
+  type: "gram" | "wishlist"
+): Promise<void> => {
+  try {
+    const userStatInfo: {
+      userId: string;
+      gramsCount: number | null;
+      wishlist: number | null;
+      conpletedBooks: number | null;
+    }[] = await db
+      .select({
+        userId: UserStats.userId,
+        gramsCount: UserStats.gramsCount,
+        wishlist: UserStats.wishlist,
+        conpletedBooks: UserStats.completedBooks,
+      })
+      .from(UserStats)
+      .where(eq(UserStats.userId, userId));
+
+    const appStatsInfo: {
+      id: string;
+      grams: number | null;
+      books: number | null;
+    }[] = await db
+      .select({
+        id: AppStats.id,
+        grams: AppStats.gramsPosted,
+        books: AppStats.booksSeeded,
+      })
+      .from(AppStats);
+    await db
+      .update(AppStats)
+      .set({
+        gramsPosted:
+          type === "gram"
+            ? appStatsInfo[0]?.grams! - 1
+            : appStatsInfo[0]?.grams!,
+      })
+      .where(eq(AppStats.id, appStatsInfo[0].id));
+    await db
+      .update(UserStats)
+      .set({
+        gramsCount:
+          type === "gram"
+            ? userStatInfo[0]?.gramsCount! - 1
+            : userStatInfo[0]?.gramsCount!,
+        wishlist:
+          type === "wishlist"
+            ? userStatInfo[0]?.wishlist! - 1
+            : userStatInfo[0]?.wishlist!,
+        completedBooks:
+          type === "wishlist"
+            ? userStatInfo[0]?.conpletedBooks! - 1
+            : userStatInfo[0]?.conpletedBooks!,
+      })
+      .where(eq(UserStats.userId, userStatInfo[0].userId));
+  } catch (error) {
+    console.error(error);
+    throw new Error(
+      `${constants.commonServerError.internal} - ${constants.debugErrorCodes.appStats.decrement}`
+    );
+  }
+};

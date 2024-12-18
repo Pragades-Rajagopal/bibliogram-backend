@@ -162,7 +162,7 @@ router.get(
 );
 
 /**
- * Search route
+ * App stats route
  */
 router.get("/app-stats", authenticateToken, AppStatsComponent.getAppStats);
 
