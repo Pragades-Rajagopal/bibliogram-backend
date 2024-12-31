@@ -7,6 +7,7 @@ import {
 } from "../services/comment";
 import constants from "../config/constants";
 import { responseObject } from "../utils/response";
+import { GetCommentByQueryResponse } from "../interfaces/comment";
 
 /**
  * Adds or updates comment to a gram
@@ -106,14 +107,14 @@ export const getCommentByQuery = async (
 ): Promise<any> => {
   try {
     const { gramId, userId, limit, offset } = request.query;
-    const data: [] = await getCommentModel(
+    const result: GetCommentByQueryResponse = await getCommentModel(
       undefined,
       gramId as string,
       userId as string,
       limit as string,
       offset as string
     );
-    if (data && data.length === 0) {
+    if (result && result.data.length === 0) {
       return response
         .status(constants.statusCode.notFound)
         .json(
@@ -126,8 +127,8 @@ export const getCommentByQuery = async (
     }
     return response.status(constants.statusCode.success).json(
       responseObject(constants.statusCode.success, constants.comment.found, {
-        count: data.length,
-        data: data,
+        count: result.totalRecords[0].count,
+        data: result.data,
       })
     );
   } catch (error) {

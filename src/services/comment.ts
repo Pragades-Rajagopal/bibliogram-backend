@@ -1,4 +1,4 @@
-import { and, eq, desc } from "drizzle-orm";
+import { and, eq, desc, count } from "drizzle-orm";
 import { db } from "../drizzle/db";
 import { Comment, CommentView } from "../drizzle/schema";
 import { IComment } from "../interfaces/book";
@@ -76,13 +76,17 @@ export const getCommentModel = async (
     } else if (userId) {
       whereClause = and(eq(CommentView.userId, userId));
     }
-    return await db
-      .select()
-      .from(CommentView)
-      .where(whereClause)
-      .orderBy(desc(CommentView.createdOn))
-      .limit(limit ? parseInt(limit!) : 10)
-      .offset(parseInt(offset! ?? undefined));
+    const [data, totalRecords] = await Promise.all([
+      db
+        .select()
+        .from(CommentView)
+        .where(whereClause)
+        .orderBy(desc(CommentView.createdOn))
+        .limit(limit ? parseInt(limit!) : 10)
+        .offset(parseInt(offset! ?? undefined)),
+      db.select({ count: count() }).from(CommentView).where(whereClause),
+    ]);
+    return { data, totalRecords };
   } catch (error: any) {
     console.error(error);
     throw new Error(
