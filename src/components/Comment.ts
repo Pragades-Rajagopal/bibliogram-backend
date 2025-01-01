@@ -61,8 +61,8 @@ export const getCommentById = async (
 ): Promise<any> => {
   try {
     const id = request.params.id;
-    const data: [] = await getCommentModel(id);
-    if (data && data.length === 0) {
+    const data: GetCommentByQueryResponse = await getCommentModel(id);
+    if (data && data.totalRecords[0].count === 0) {
       return response
         .status(constants.statusCode.notFound)
         .json(
@@ -75,7 +75,7 @@ export const getCommentById = async (
     }
     return response.status(constants.statusCode.success).json(
       responseObject(constants.statusCode.success, constants.comment.found, {
-        data: data,
+        data: data.data,
       })
     );
   } catch (error) {

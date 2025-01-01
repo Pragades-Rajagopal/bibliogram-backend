@@ -12,6 +12,7 @@ import {
   upsertGramModel,
 } from "../services/gram";
 import { responseObject } from "../utils/response";
+import { GetGramsResponse } from "../interfaces/gram";
 
 /**
  * Adds or updates gram
@@ -65,8 +66,8 @@ export const getGramById = async (
 ): Promise<any> => {
   try {
     const id = request.params.id;
-    const data: [] = await getGramModel(id);
-    if (data && data.length === 0) {
+    const data: GetGramsResponse = await getGramModel(id);
+    if (data && data.totalRecords[0].count === 0) {
       return response
         .status(constants.statusCode.notFound)
         .json(
@@ -79,7 +80,7 @@ export const getGramById = async (
     }
     return response.status(constants.statusCode.success).json(
       responseObject(constants.statusCode.success, constants.gram.found, {
-        data: data,
+        data: data.data,
       })
     );
   } catch (error) {
@@ -111,14 +112,14 @@ export const getGramsByQuery = async (
 ): Promise<any> => {
   try {
     const { bookId, userId, limit, offset } = request.query;
-    const data: [] = await getGramModel(
+    const result: GetGramsResponse = await getGramModel(
       undefined,
       bookId as string,
       userId as string,
       limit as string,
       offset as string
     );
-    if (data && data.length === 0) {
+    if (result.totalRecords[0].count === 0) {
       return response
         .status(constants.statusCode.notFound)
         .json(
@@ -131,8 +132,8 @@ export const getGramsByQuery = async (
     }
     return response.status(constants.statusCode.success).json(
       responseObject(constants.statusCode.success, constants.gram.found, {
-        count: data.length,
-        data: data,
+        count: result.totalRecords[0].count,
+        data: result.data,
       })
     );
   } catch (error) {

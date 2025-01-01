@@ -1,4 +1,4 @@
-import { and, eq, sql, desc } from "drizzle-orm";
+import { and, eq, sql, desc, count } from "drizzle-orm";
 import constants from "../config/constants";
 import { db } from "../drizzle/db";
 import { Bookmark, BookmarkView, Gram, GramView } from "../drizzle/schema";
@@ -78,6 +78,7 @@ export const getGramModel = async (
 ): Promise<any> => {
   try {
     let whereClause;
+    const isPrivateClause = eq(GramView.isPrivate, false);
     if (gramId) {
       // Get gram by id
       whereClause = eq(GramView.id, gramId);
@@ -86,28 +87,29 @@ export const getGramModel = async (
       whereClause = and(
         eq(GramView.bookId, bookId),
         eq(GramView.userId, userId),
-        eq(GramView.isPrivate, false)
+        isPrivateClause
       );
     } else if (bookId) {
       // Get all public grams for the given book
-      whereClause = and(
-        eq(GramView.bookId, bookId),
-        eq(GramView.isPrivate, false)
-      );
+      whereClause = and(eq(GramView.bookId, bookId), isPrivateClause);
     } else if (userId) {
       // Get all grams for the given user
-      whereClause = and(
-        eq(GramView.userId, userId),
-        eq(GramView.isPrivate, false)
-      );
+      whereClause = and(eq(GramView.userId, userId));
     }
-    return await db
-      .select()
-      .from(GramView)
-      .where(whereClause ?? eq(GramView.isPrivate, false))
-      .orderBy(desc(GramView.modifiedOn))
-      .limit(limit ? parseInt(limit!) : 10)
-      .offset(parseInt(offset! ?? undefined));
+    const [data, totalRecords] = await Promise.all([
+      db
+        .select()
+        .from(GramView)
+        .where(whereClause ?? isPrivateClause)
+        .orderBy(desc(GramView.modifiedOn))
+        .limit(limit ? parseInt(limit!) : 10)
+        .offset(parseInt(offset! ?? undefined)),
+      db
+        .select({ count: count() })
+        .from(GramView)
+        .where(whereClause ?? isPrivateClause),
+    ]);
+    return { data, totalRecords };
   } catch (error: any) {
     console.error(error);
     throw new Error(
@@ -191,7 +193,7 @@ export const saveBookmarkModel = async (data: IBookmarkGram): Promise<any> => {
   } catch (error: any) {
     if (error?.code === "23503")
       throw new Error(
-        `${constants.assetValidation.userNotExists} or ${constants.assetValidation.bookNotExists}`
+        `${constants.assetValidation.userNotExists} or ${constants.assetValidation.gramNotExists}`
       );
     if (error?.code === "23505") throw new Error(constants.bookmark.exists);
     throw new Error(error?.message);
