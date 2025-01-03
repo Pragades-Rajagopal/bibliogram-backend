@@ -31,7 +31,8 @@ export const searchModel = async (value: string): Promise<any> => {
           ilike(Book.name, `%${searchValue}%`),
           ilike(Book.author, `%${searchValue}%`)
         )
-      );
+      )
+      .limit(20);
     const gramQuery = db
       .select({
         type: sql`'gram'`,
@@ -48,7 +49,8 @@ export const searchModel = async (value: string): Promise<any> => {
           ilike(GramView.gram, `%${searchValue}%`),
           eq(GramView.isPrivate, false)
         )
-      );
+      )
+      .limit(20);
     const [bookResult, gramResult] = await Promise.all([bookQuery, gramQuery]);
     return [...bookResult, ...gramResult];
   } catch (error) {
